@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Music Industry Chess — Charcoal Edition</title>
+<style>
+  :root{
+    --bg:#ececec;
+    --sq-light:#cfcfd3;
+    --sq-dark:#9ca0a6;
+    --ui:#fff;
+    --ink:#111;
+    --accent:#000;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;color:#000}
+
+  .wrap{max-width:1120px;margin:24px auto;padding:16px}
+  .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+  .turn{background:var(--ui);border:2px solid var(--accent);border-radius:12px;padding:8px 12px;font-weight:700}
+  button{border:2px solid var(--accent);background:#fff;color:#000;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+  button:hover{background:#000;color:#fff}
+
+  .hero{display:flex;gap:24px;flex-wrap:wrap}
+  .board{width:min(92vw,720px);aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid var(--accent);user-select:none;box-shadow:0 10px 24px rgba(0,0,0,.08);position:relative}
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%}
+
+  /* Charcoal texture layer (very light, sketchy) */
+  .board::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      /* subtle paper grain */
+      radial-gradient(1200px 1200px at 10% 10%, rgba(255,255,255,.08), transparent 60%) ,
+      radial-gradient(1200px 1200px at 90% 90%, rgba(0,0,0,.06), transparent 60%);
+    mix-blend-mode:multiply;
+    pointer-events:none;
+  }
+  /* Per-square charcoal grain using SVG turbulence (tiny, inline, lightweight) */
+  .sq::after{
+    content:"";
+    position:absolute; inset:0;
+    opacity:.15;
+    background-image:url('data:image/svg+xml;utf8,\
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox=\"0 0 100 100\">\
+        <filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" numOctaves=\"2\"/></filter>\
+        <rect width=\"100\" height=\"100\" filter=\"url(%23n)\" fill=\"black\" opacity=\"0.55\"/>\
+      </svg>');
+    background-size:120% 120%;
+    pointer-events:none;
+    mix-blend-mode:multiply;
+  }
+
+  .sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+  .light{background:var(--sq-light)}
+  .dark{background:var(--sq-dark)}
+  .sq.sel{outline:4px solid rgba(0,0,0,.45);outline-offset:-4px}
+  .sq.move{box-shadow:inset 0 0 0 4px rgba(0,0,0,.25)}
+
+  .piece{width:84%;height:84%;display:flex;align-items:center;justify-content:center}
+  .piece img{max-width:100%;max-height:100%;object-fit:contain;background:transparent;border:none;box-shadow:none;image-rendering:auto}
+
+  /* Auto-ivory for white set if you only upload black images */
+  .whiteAuto img{
+    filter: invert(1) grayscale(1) brightness(1.15) contrast(.9);
+  }
+
+  .side{flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--ui);border:2px solid var(--accent);border-radius:12px;padding:12px}
+  .card h3{margin:0 0 8px 0;font-size:14px;text-transform:uppercase;letter-spacing:.12em}
+  .moves{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:13px;white-space:pre-wrap;line-height:1.45;min-height:120px}
+  .legend table{border-collapse:collapse;width:100%}
+  .legend td{padding:6px 0;border-bottom:1px dashed #000;font-size:14px;vertical-align:top}
+  .legend .sym{width:44px;text-align:center}
+  .hint{font-size:12px;opacity:.8;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div id="turn" class="turn">Turn: White (Artists)</div>
+    <div style="display:flex;gap:8px">
+      <button id="flipBtn">Flip board</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="board"><div id="board" class="grid"></div></div>
+
+    <div class="side">
+      <div class="card">
+        <h3>Move List</h3>
+        <div id="moves" class="moves"></div>
+      </div>
+
+      <div class="card legend">
+        <h3>Legend (Music Industry Mapping)</h3>
+        <table>
+          <tr><td class="sym">King</td><td><b>Government</b> — judge with crown + gavel</td></tr>
+          <tr><td class="sym">Queen</td><td><b>Media</b> — crowned sower, upright</td></tr>
+          <tr><td class="sym">Rook</td><td><b>Gatekeepers</b> — arch with bars</td></tr>
+          <tr><td class="sym">Bishop</td><td><b>Cultural Institution</b> — award/trophy</td></tr>
+          <tr><td class="sym">Knight</td><td><b>Lawyers</b> — barrister wig + robe</td></tr>
+          <tr><td class="sym">Pawn</td><td><b>Artists</b> — mic held like a cross</td></tr>
+        </table>
+        <div class="hint">Board = Consumers. Pieces = Industry moving across them.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- SPRITES ----------
+   If you ONLY upload black pieces, leave `WHITE_FROM_BLACK = true` and the code will
+   auto-make the white set via filters.
+   If you also upload a separate white set, set WHITE_FROM_BLACK=false and fill the white paths.
+*/
+const WHITE_FROM_BLACK = true;
+
+const BLACK = {
+  P:'images/black-pawn.png',
+  R:'images/black-rook.png',
+  N:'images/black-knight.png',
+  B:'images/black-bishop.png',
+  Q:'images/black-queen.png',
+  K:'images/black-king.png'
+};
+
+const WHITE = WHITE_FROM_BLACK ? BLACK : {
+  P:'images/white-pawn.png',
+  R:'images/white-rook.png',
+  N:'images/white-knight.png',
+  B:'images/white-bishop.png',
+  Q:'images/white-queen.png',
+  K:'images/white-king.png'
+};
+
+/* -------------- Minimal chess engine + UI -------------- */
+(function(){
+  const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
+  const boardEl=document.getElementById('board');
+  const turnEl=document.getElementById('turn');
+  const movesEl=document.getElementById('moves');
+  const flipBtn=document.getElementById('flipBtn');
+  const resetBtn=document.getElementById('resetBtn');
+
+  let S={}, flipped=false, sel=null, legal=[];
+
+  function reset(){
+    S={
+      b:[
+        ['r','n','b','q','k','b','n','r'],
+        ['p','p','p','p','p','p','p','p'],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        ['P','P','P','P','P','P','P','P'],
+        ['R','N','B','Q','K','B','N','R'],
+      ],
+      t:'w', ep:null, hc:0, fm:1,
+      cast:{w:{K:true,Q:true}, b:{K:true,Q:true}},
+      h:[]
+    };
+    sel=null; legal=[];
+    render();
+  }
+
+  function inb(r,c){return r>=0 && r<8 && c>=0 && c<8;}
+  function own(p,color){return p && (color==='w'?p===p.toUpperCase():p===p.toLowerCase());}
+  function foe(p,color){return p && !own(p,color);}
+  function findK(color){
+    const k=color==='w'?'K':'k';
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(S.b[r][c]===k)return[r,c];
+    return null;
+  }
+
+  function gen(color=S.t){
+    const mv=[];
+    const add=(fr,fc,tr,tc,flags={})=>mv.push({from:[fr,fc],to:[tr,tc],flags});
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=S.b[r][c]; if(!own(p,color)) continue;
+      const u=p.toUpperCase();
+      if(u==='P'){
+        const dir=color==='w'?-1:1, start=color==='w'?6:1, promo=color==='w'?0:7;
+        if(inb(r+dir,c) && !S.b[r+dir][c]){
+          add(r,c,r+dir,c,{promo:r+dir===promo});
+          if(r===start && !S.b[r+2*dir][c]) add(r,c,r+2*dir,c,{double:true});
+        }
+        for(const dc of[-1,1]){
+          const nr=r+dir,nc=c+dc;
+          if(!inb(nr,nc)) continue;
+          const t=S.b[nr][nc];
+          if(t && foe(t,color)) add(r,c,nr,nc,{capture:true,promo:nr===promo});
+        }
+        if(S.ep){
+          const ef=F.indexOf(S.ep[0]), er=Number(S.ep[1])-1;
+          if(Math.abs(ef-c)===1 && er===r+dir) add(r,c,er,ef,{enpassant:true});
+        }
+      } else if(u==='N'){
+        const d=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
+        for(const[dr,dc]of d){const nr=r+dr,nc=c+dc;if(!inb(nr,nc))continue;
+          const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t});}
+      } else if(u==='B'||u==='R'||u==='Q'){
+        const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+        for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){
+          const t=S.b[nr][nc];
+          if(!t) add(r,c,nr,nc);
+          else { if(foe(t,color)) add(r,c,nr,nc,{capture:true}); break; }
+          nr+=dr; nc+=dc;
+        }}
+      } else if(u==='K'){
+        for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+          if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc)) continue;
+          const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t});
+        }
+        if(color==='w' && r===7 && c===4){
+          if(S.cast.w.K && !S.b[7][5] && !S.b[7][6]) add(7,4,7,6,{castle:'K'});
+          if(S.cast.w.Q && !S.b[7][3] && !S.b[7][2] && !S.b[7][1]) add(7,4,7,2,{castle:'Q'});
+        }
+        if(color==='b' && r===0 && c===4){
+          if(S.cast.b.K && !S.b[0][5] && !S.b[0][6]) add(0,4,0,6,{castle:'K'});
+          if(S.cast.b.Q && !S.b[0][3] && !S.b[0][2] && !S.b[0][1]) add(0,4,0,2,{castle:'Q'});
+        }
+      }
+    }
+    const legal=[];
+    for(const m of mv){
+      const snap=JSON.parse(JSON.stringify(S));
+      apply(m,true);
+      if(!inCheck(color)) legal.push(m);
+      S=snap;
+    }
+    return legal;
+  }
+
+  function inCheck(color){
+    const kpos=findK(color); if(!kpos) return false;
+    const [kr,kc]=kpos, foeC=color==='w'?'b':'w';
+    const atk=new Set(), mark=(r,c)=>atk.add(r+','+c);
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=S.b[r][c]; if(!own(p,foeC)) continue;
+      const u=p.toUpperCase();
+      if(u==='P'){
+        const dir=foeC==='w'?-1:1;
+        for(const dc of[-1,1]){const nr=r+dir,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);}
+      } else if(u==='N'){
+        const d=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
+        for(const[dr,dc] of d){const nr=r+dr,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);}
+      } else if(u==='B'||u==='R'||u==='Q'){
+        const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+        for(const[dr,dc] of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ mark(nr,nc); if(S.b[nr][nc]) break; nr+=dr; nc+=dc; }}
+      } else if(u==='K'){
+        for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(inb(nr,nc)) mark(nr,nc); }
+      }
+    }
+    return atk.has(kr+','+kc);
+  }
+
+  function apply(m, dry=false){
+    const [fr,fc]=m.from,[tr,tc]=m.to, piece=S.b[fr][fc];
+    S.ep=null;
+    S.b[tr][tc]=piece; S.b[fr][fc]=null;
+
+    if(m.flags?.enpassant){ const dir=S.t==='w'?-1:1; S.b[tr-dir][tc]=null; }
+    if(m.flags?.castle==='K'){
+      if(S.t==='w'){ S.b[7][5]=S.b[7][7]; S.b[7][7]=null; }
+      else { S.b[0][5]=S.b[0][7]; S.b[0][7]=null; }
+    } else if(m.flags?.castle==='Q'){
+      if(S.t==='w'){ S.b[7][3]=S.b[7][0]; S.b[7][0]=null; }
+      else { S.b[0][3]=S.b[0][0]; S.b[0][0]=null; }
+    }
+    if(m.flags?.double){
+      const file=F[fc], rank=S.t==='w'?6:3;
+      S.ep=file + (rank+1);
+    }
+    // promotions auto-queen
+    if(m.flags?.promo){ S.b[tr][tc] = (S.t==='w'?'Q':'q'); }
+
+    if(!dry){
+      S.h.push(toAlg(m));
+      S.t = (S.t==='w'?'b':'w');
+      if(S.t==='w') S.fm++;
+      render();
+    }
+  }
+
+  function toAlg(m){
+    const Ff=F[m.from[1]], Ft=F[m.to[1]];
+    const Rf=8-m.from[0], Rt=8-m.to[0];
+    if(m.flags?.castle==='K') return 'O-O';
+    if(m.flags?.castle==='Q') return 'O-O-O';
+    return `${Ff}${Rf}-${Ft}${Rt}`;
+  }
+
+  function indexToCoord(r,c){ return flipped ? [7-r,7-c] : [r,c]; }
+
+  function render(){
+    boardEl.innerHTML='';
+    turnEl.textContent = `Turn: ${S.t==='w'?'White (Artists)':'Black (Institutions)'}`;
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const [rr,cc]=indexToCoord(r,c);
+      const div=document.createElement('div');
+      div.className='sq ' + (((r+c)%2===0)?'light':'dark');
+      div.dataset.r=rr; div.dataset.c=cc;
+
+      if(sel && sel[0]===rr && sel[1]===cc) div.classList.add('sel');
+      if(legal.some(m=>m.to[0]===rr && m.to[1]===cc)) div.classList.add('move');
+
+      const p=S.b[rr][cc];
+      if(p){
+        const holder=document.createElement('div');
+        holder.className='piece';
+        const img=document.createElement('img');
+        const isWhite = (p===p.toUpperCase());
+        const key = p.toUpperCase();
+        img.src = (isWhite ? WHITE[key] : BLACK[key]) || (isWhite ? BLACK[key] : BLACK[key]);
+
+        // If we're auto-deriving white from black
+        if(isWhite && (WHITE_FROM_BLACK || !WHITE[key])) holder.classList.add('whiteAuto');
+
+        holder.appendChild(img);
+        div.appendChild(holder);
+      }
+      boardEl.appendChild(div);
+    }
+    movesEl.textContent = S.h.map((m,i)=> (i%2===0?`${Math.floor(i/2)+1}. `:'   ')+m ).join('\n');
+
+    // click handling
+    boardEl.querySelectorAll('.sq').forEach(sq=>{
+      sq.onclick = ()=>{
+        const r=Number(sq.dataset.r), c=Number(sq.dataset.c);
+        const p=S.b[r][c];
+        if(p && ((S.t==='w' && p===p.toUpperCase()) || (S.t==='b' && p===p.toLowerCase()))){
+          sel=[r,c];
+          legal=gen(S.t).filter(m=>m.from[0]===r && m.from[1]===c);
+          render();
+        } else if(sel){
+          const cand=legal.find(m=>m.to[0]===r && m.to[1]===c);
+          if(cand){ apply(cand); sel=null; legal=[]; }
+          else { sel=null; legal=[]; render(); }
+        }
+      };
+    });
+  }
+
+  document.getElementById('flipBtn').onclick=()=>{flipped=!flipped; render();};
+  document.getElementById('resetBtn').onclick=reset;
+
+  reset();
+})();
+</script>
+</body>
+</html>
