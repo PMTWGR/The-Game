@@ -6,14 +6,15 @@
 <title>Music Industry Chess — Charcoal Edition</title>
 <style>
   :root{
-    --bg:#ececec;
-    --sq-light:#cfcfd3;
-    --sq-dark:#9ca0a6;
-    --ui:#fff;
+    /* Greys tuned for max clarity with charcoal assets */
+    --bg:#e9eaec;
+    --sq-light:#c8cbd0;
+    --sq-dark:#7b8087;
+    --ui:#ffffff;
     --ink:#111;
     --accent:#000;
   }
-  html,body{margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;color:#000}
+  html,body{margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial,sans-serif;color:#000}
 
   .wrap{max-width:1120px;margin:24px auto;padding:16px}
   .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
@@ -25,30 +26,29 @@
   .board{width:min(92vw,720px);aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid var(--accent);user-select:none;box-shadow:0 10px 24px rgba(0,0,0,.08);position:relative}
   .grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%}
 
-  /* Charcoal texture layer (very light, sketchy) */
+  /* Charcoal paper + vignette */
   .board::before{
     content:"";
     position:absolute; inset:0;
     background:
-      /* subtle paper grain */
-      radial-gradient(1200px 1200px at 10% 10%, rgba(255,255,255,.08), transparent 60%) ,
-      radial-gradient(1200px 1200px at 90% 90%, rgba(0,0,0,.06), transparent 60%);
+      radial-gradient(1200px 1200px at 12% 8%, rgba(255,255,255,.08), transparent 60%),
+      radial-gradient(1200px 1200px at 88% 92%, rgba(0,0,0,.10), transparent 60%);
     mix-blend-mode:multiply;
     pointer-events:none;
   }
-  /* Per-square charcoal grain using SVG turbulence (tiny, inline, lightweight) */
+  /* Per-square grain using SVG turbulence */
   .sq::after{
     content:"";
     position:absolute; inset:0;
-    opacity:.15;
+    opacity:.18;
     background-image:url('data:image/svg+xml;utf8,\
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox=\"0 0 100 100\">\
-        <filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" numOctaves=\"2\"/></filter>\
-        <rect width=\"100\" height=\"100\" filter=\"url(%23n)\" fill=\"black\" opacity=\"0.55\"/>\
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">\
+        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2"/></filter>\
+        <rect width="100" height="100" filter="url(%23n)" fill="black" opacity="0.55"/>\
       </svg>');
     background-size:120% 120%;
-    pointer-events:none;
     mix-blend-mode:multiply;
+    pointer-events:none;
   }
 
   .sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
@@ -58,11 +58,19 @@
   .sq.move{box-shadow:inset 0 0 0 4px rgba(0,0,0,.25)}
 
   .piece{width:84%;height:84%;display:flex;align-items:center;justify-content:center}
-  .piece img{max-width:100%;max-height:100%;object-fit:contain;background:transparent;border:none;box-shadow:none;image-rendering:auto}
-
-  /* Auto-ivory for white set if you only upload black images */
+  .piece img{
+    max-width:100%;max-height:100%;object-fit:contain;
+    background:transparent!important;border:none!important;box-shadow:none!important;
+    image-rendering:auto; 
+    /* subtle depth so white set reads on light squares */
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));
+  }
+  /* Auto-ivory from black art if you don’t have separate white files */
   .whiteAuto img{
-    filter: invert(1) grayscale(1) brightness(1.15) contrast(.9);
+    filter:
+      invert(1) grayscale(1) brightness(1.18) contrast(1.03)
+      drop-shadow(0 1px 0 rgba(0,0,0,.35))
+      drop-shadow(0 2px 4px rgba(0,0,0,.25));
   }
 
   .side{flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px}
@@ -111,12 +119,7 @@
 </div>
 
 <script>
-/* ---------- SPRITES ----------
-   If you ONLY upload black pieces, leave `WHITE_FROM_BLACK = true` and the code will
-   auto-make the white set via filters.
-   If you also upload a separate white set, set WHITE_FROM_BLACK=false and fill the white paths.
-*/
-const WHITE_FROM_BLACK = true;
+const WHITE_FROM_BLACK = true; // keep true if you only upload black pieces
 
 const BLACK = {
   P:'images/black-pawn.png',
@@ -136,7 +139,6 @@ const WHITE = WHITE_FROM_BLACK ? BLACK : {
   K:'images/white-king.png'
 };
 
-/* -------------- Minimal chess engine + UI -------------- */
 (function(){
   const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
   const boardEl=document.getElementById('board');
@@ -272,10 +274,9 @@ const WHITE = WHITE_FROM_BLACK ? BLACK : {
       else { S.b[0][3]=S.b[0][0]; S.b[0][0]=null; }
     }
     if(m.flags?.double){
-      const file=F[fc], rank=S.t==='w'?6:3;
-      S.ep=file + (rank+1);
+      const Ff=['a','b','c','d','e','f','g','h'][fc], rank=S.t==='w'?6:3;
+      S.ep=Ff + (rank+1);
     }
-    // promotions auto-queen
     if(m.flags?.promo){ S.b[tr][tc] = (S.t==='w'?'Q':'q'); }
 
     if(!dry){
@@ -287,7 +288,7 @@ const WHITE = WHITE_FROM_BLACK ? BLACK : {
   }
 
   function toAlg(m){
-    const Ff=F[m.from[1]], Ft=F[m.to[1]];
+    const Ff=['a','b','c','d','e','f','g','h'][m.from[1]], Ft=['a','b','c','d','e','f','g','h'][m.to[1]];
     const Rf=8-m.from[0], Rt=8-m.to[0];
     if(m.flags?.castle==='K') return 'O-O';
     if(m.flags?.castle==='Q') return 'O-O-O';
@@ -316,10 +317,7 @@ const WHITE = WHITE_FROM_BLACK ? BLACK : {
         const isWhite = (p===p.toUpperCase());
         const key = p.toUpperCase();
         img.src = (isWhite ? WHITE[key] : BLACK[key]) || (isWhite ? BLACK[key] : BLACK[key]);
-
-        // If we're auto-deriving white from black
-        if(isWhite && (WHITE_FROM_BLACK || !WHITE[key])) holder.classList.add('whiteAuto');
-
+        if(isWhite && !WHITE[key]) holder.classList.add('whiteAuto');
         holder.appendChild(img);
         div.appendChild(holder);
       }
@@ -327,7 +325,6 @@ const WHITE = WHITE_FROM_BLACK ? BLACK : {
     }
     movesEl.textContent = S.h.map((m,i)=> (i%2===0?`${Math.floor(i/2)+1}. `:'   ')+m ).join('\n');
 
-    // click handling
     boardEl.querySelectorAll('.sq').forEach(sq=>{
       sq.onclick = ()=>{
         const r=Number(sq.dataset.r), c=Number(sq.dataset.c);
