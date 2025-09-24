@@ -119,25 +119,32 @@
 </div>
 
 <script>
-const WHITE_FROM_BLACK = true; // keep true if you only upload black pieces
+
+const WHITE_FROM_BLACK = true; 
+
+  const ASSET_DIR = 'image/';
+
+const V = '?v=8';
 
 const BLACK = {
-  P:'images/black-pawn.png',
-  R:'images/black-rook.png',
-  N:'images/black-knight.png',
-  B:'images/black-bishop.png',
-  Q:'images/black-queen.png',
-  K:'images/black-king.png'
+  P: ASSET_DIR + 'black-pawn.png'   + V,
+  R: ASSET_DIR + 'black-rook.png'   + V,
+  N: ASSET_DIR + 'black-knight.png' + V,
+  B: ASSET_DIR + 'black-bishop.png' + V,
+  Q: ASSET_DIR + 'black-queen.png'  + V,
+  K: ASSET_DIR + 'black-king.png'   + V,
 };
 
 const WHITE = WHITE_FROM_BLACK ? BLACK : {
-  P:'images/white-pawn.png',
-  R:'images/white-rook.png',
-  N:'images/white-knight.png',
-  B:'images/white-bishop.png',
-  Q:'images/white-queen.png',
-  K:'images/white-king.png'
+  P: ASSET_DIR + 'white-pawn.png'   + V,
+  R: ASSET_DIR + 'white-rook.png'   + V,
+  N: ASSET_DIR + 'white-knight.png' + V,
+  B: ASSET_DIR + 'white-bishop.png' + V,
+  Q: ASSET_DIR + 'white-queen.png'  + V,
+  K: ASSET_DIR + 'white-king.png'   + V,
 };
+</script>
+
 
 (function(){
   const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
