@@ -1,281 +1,786 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Music Industry Chess — Charcoal Edition</title>
-<style>
-  :root{
-    --bg:#e9eaec; --sq-light:#c8cbd0; --sq-dark:#7b8087;
-    --ui:#ffffff; --ink:#111; --accent:#000;
-  }
-  html,body{margin:0;padding:0;background:var(--bg);
-    font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial,sans-serif;color:#000}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Industry Chess</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  .wrap{max-width:1120px;margin:24px auto;padding:16px}
-  .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
-  .turn{background:var(--ui);border:2px solid var(--accent);border-radius:12px;padding:8px 12px;font-weight:700}
-  button{border:2px solid var(--accent);background:#fff;color:#000;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
-  button:hover{background:#000;color:#fff}
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  .hero{display:flex;gap:24px;flex-wrap:wrap}
-  .board{width:min(92vw,720px);aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid var(--accent);user-select:none;box-shadow:0 10px 24px rgba(0,0,0,.08);position:relative}
-  .grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%}
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: 95vh;
+        }
 
-  /* Charcoal vignette */
-  .board::before{content:"";position:absolute;inset:0;
-    background:
-      radial-gradient(1200px 1200px at 12% 8%, rgba(255,255,255,.08), transparent 60%),
-      radial-gradient(1200px 1200px at 88% 92%, rgba(0,0,0,.10), transparent 60%);
-    mix-blend-mode:multiply;pointer-events:none;}
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px 0;
+        }
 
-  /* Per-square grain */
-  .sq::after{content:"";position:absolute;inset:0;opacity:.18;
-    background-image:url('data:image/svg+xml;utf8,\
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">\
-        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2"/></filter>\
-        <rect width="100" height="100" filter="url(%23n)" fill="black" opacity="0.55"/>\
-      </svg>');
-    background-size:120% 120%;mix-blend-mode:multiply;pointer-events:none;}
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  .sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
-  .light{background:var(--sq-light)} .dark{background:var(--sq-dark)}
-  .sq.sel{outline:4px solid rgba(0,0,0,.45);outline-offset:-4px}
-  .sq.move{box-shadow:inset 0 0 0 4px rgba(0,0,0,.25)}
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
 
-  .piece{width:84%;height:84%;display:flex;align-items:center;justify-content:center}
-  .piece img{max-width:100%;max-height:100%;object-fit:contain;background:transparent!important;border:none!important;box-shadow:none!important;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));}
-  .whiteAuto img{
-    filter: invert(1) grayscale(1) brightness(1.18) contrast(1.03)
-      drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));
-  }
+        /* Fixed panel styles */
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
 
-  .side{flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px}
-  .card{background:var(--ui);border:2px solid var(--accent);border-radius:12px;padding:12px}
-  .card h3{margin:0 0 8px 0;font-size:14px;text-transform:uppercase;letter-spacing:.12em}
-  .moves{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:13px;white-space:pre-wrap;line-height:1.45;min-height:120px}
-  .legend table{border-collapse:collapse;width:100%}
-  .legend td{padding:6px 0;border-bottom:1px dashed #000;font-size:14px;vertical-align:top}
-  .legend .sym{width:44px;text-align:center}
-  .hint{font-size:12px;opacity:.8;margin-top:6px}
-</style>
+        .panel h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 5px;
+        }
+
+        /* Game board container */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .board-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #chessboard {
+            width: 560px;
+            height: 560px;
+            border: 3px solid #4ecdc4;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Move list styling */
+        .move-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .move-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #4ecdc4;
+        }
+
+        /* Legend styling */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .legend-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        /* Educational content */
+        .educational-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .insight {
+            background: rgba(78, 205, 196, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .ai-thinking {
+            background: rgba(255, 107, 107, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            #chessboard {
+                width: 400px;
+                height: 400px;
+            }
+        }
+
+        .square {
+            transition: all 0.3s ease;
+        }
+
+        .square:hover {
+            filter: brightness(1.2);
+        }
+
+        .selected {
+            filter: brightness(1.3) !important;
+            box-shadow: inset 0 0 10px rgba(78, 205, 196, 0.8);
+        }
+
+        .valid-move {
+            position: relative;
+        }
+
+        .valid-move::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(78, 205, 196, 0.5);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <div id="turn" class="turn">Turn: White (Artists)</div>
-    <div style="display:flex;gap:8px">
-      <button id="flipBtn">Flip board</button>
-      <button id="resetBtn">Reset</button>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Music Industry Chess</h1>
+            <p>A Game of Strategy, Power, and Perspective</p>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="panel">
+            <h2>MOVE LIST</h2>
+            <div class="move-list" id="moveList">
+                <!-- Moves will be added here -->
+            </div>
+            
+            <div class="controls">
+                <button onclick="resetGame()">New Game</button>
+                <button onclick="undoMove()">Undo</button>
+            </div>
+        </div>
+
+        <!-- Center Game Board -->
+        <div class="game-container">
+            <div class="board-container">
+                <svg id="chessboard" width="560" height="560" viewBox="0 0 560 560">
+                    <!-- Board squares -->
+                    <pattern id="consumerPattern" patternUnits="userSpaceOnUse" width="70" height="70">
+                        <rect width="70" height="70" fill="#2a2a4a"/>
+                        <circle cx="35" cy="35" r="2" fill="#4ecdc4" opacity="0.3"/>
+                    </pattern>
+                    
+                    <rect width="560" height="560" fill="url(#consumerPattern)"/>
+                    
+                    <!-- Chess squares overlay -->
+                    <g id="boardSquares"></g>
+                    
+                    <!-- Pieces will be added here -->
+                    <g id="pieces"></g>
+                    
+                    <!-- Valid move indicators -->
+                    <g id="validMoves"></g>
+                </svg>
+            </div>
+            
+            <div class="controls">
+                <button onclick="makeAIMove()">AI Move</button>
+                <select id="aiPersonality">
+                    <option value="orca">ORCA Independent</option>
+                    <option value="major">Major Label</option>
+                    <option value="tech">Tech Platform</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="panel">
+            <h2>INDUSTRY INSIGHTS</h2>
+            <div class="educational-content" id="educationalContent">
+                <div class="insight">
+                    <h3>🎯 The Board = Consumers</h3>
+                    <p>Every square represents potential fans. The entire industry moves across consumer attention.</p>
+                </div>
+                <div class="ai-thinking" id="aiThinking">
+                    <h3>🤖 AI Analysis</h3>
+                    <p>Waiting for game to start...</p>
+                </div>
+            </div>
+            
+            <h2 style="margin-top: 20px;">LEGEND</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #4ecdc4;"></div>
+                    <span>King = Government</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #ff6b6b;"></div>
+                    <span>Queen = Media</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #ffd166;"></div>
+                    <span>Rook = Gatekeepers</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #06d6a0;"></div>
+                    <span>Bishop = Awards</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #118ab2;"></div>
+                    <span>Knight = Lawyers</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #ef476f;"></div>
+                    <span>Pawn = Artists</span>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="hero">
-    <div class="board"><div id="board" class="grid"></div></div>
+    <script>
+        // Game state
+        const gameState = {
+            board: [],
+            currentPlayer: 'white',
+            selectedPiece: null,
+            validMoves: [],
+            moveHistory: [],
+            aiThinking: false
+        };
 
-    <div class="side">
-      <div class="card">
-        <h3>Move List</h3>
-        <div id="moves" class="moves"></div>
-      </div>
+        // Music Industry AI Personalities
+        const aiPersonalities = {
+            orca: {
+                name: "ORCA Independent",
+                style: "Patient developer focused on long-term artist growth",
+                riskTolerance: 0.3,
+                aggression: 0.4,
+                priorities: ['artist_development', 'sustainability', 'community']
+            },
+            major: {
+                name: "Major Label",
+                style: "Aggressive consolidator focused on market control", 
+                riskTolerance: 0.6,
+                aggression: 0.8,
+                priorities: ['market_share', 'quick_returns', 'control']
+            },
+            tech: {
+                name: "Tech Platform", 
+                style: "Innovative disruptor changing industry rules",
+                riskTolerance: 0.7,
+                aggression: 0.5,
+                priorities: ['scale', 'data_control', 'innovation']
+            }
+        };
 
-      <div class="card legend">
-        <h3>Legend (Music Industry Mapping)</h3>
-        <table>
-          <tr><td class="sym">King</td><td><b>Government</b> — judge with crown + gavel</td></tr>
-          <tr><td class="sym">Queen</td><td><b>Media</b> — crowned sower, upright</td></tr>
-          <tr><td class="sym">Rook</td><td><b>Gatekeepers</b> — arch with bars</td></tr>
-          <tr><td class="sym">Bishop</td><td><b>Cultural Institution</b> — award/trophy</td></tr>
-          <tr><td class="sym">Knight</td><td><b>Lawyers</b> — barrister wig + robe</td></tr>
-          <tr><td class="sym">Pawn</td><td><b>Artists</b> — mic held like a cross</td></tr>
-        </table>
-        <div class="hint">Board = Consumers. Pieces = Industry moving across them.</div>
-      </div>
-    </div>
-  </div>
-</div>
+        // Piece values based on music industry impact
+        const pieceValues = {
+            'p': 1,   // Artist - foundational but low individual value
+            'r': 5,   // Gatekeeper - controls access
+            'n': 3,   // Lawyer - tactical specialist  
+            'b': 3,   // Award - influences status
+            'q': 9,   // Media - most powerful influencer
+            'k': 1000 // Government - game-ending importance
+        };
 
-<script>
-/* ---------- SPRITES ---------- */
-const WHITE_FROM_BLACK = true;      // we only have black PNGs; white is auto-filtered
-const ASSET_DIR = 'image/';         // folder with your PNGs
-const V = '?v=10';                  // bump to beat cache after changes
-
-const BLACK = {
-  P: ASSET_DIR + 'black-pawn.png'   + V,
-  R: ASSET_DIR + 'black-rook.png'   + V,
-  N: ASSET_DIR + 'black-knight.png' + V,
-  B: ASSET_DIR + 'black-bishop.png' + V,
-  Q: ASSET_DIR + 'black-queen.png'  + V,
-  K: ASSET_DIR + 'black-king.png'   + V,
-};
-const WHITE = WHITE_FROM_BLACK ? {} : {
-  P: ASSET_DIR + 'white-pawn.png'   + V,
-  R: ASSET_DIR + 'white-rook.png'   + V,
-  N: ASSET_DIR + 'white-knight.png' + V,
-  B: ASSET_DIR + 'white-bishop.png' + V,
-  Q: ASSET_DIR + 'white-queen.png'  + V,
-  K: ASSET_DIR + 'white-king.png'   + V,
-};
-
-/* ---------- Simple chess engine + UI ---------- */
-(function(){
-  const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
-  const boardEl=document.getElementById('board');
-  const turnEl=document.getElementById('turn');
-  const movesEl=document.getElementById('moves');
-  const flipBtn=document.getElementById('flipBtn');
-  const resetBtn=document.getElementById('resetBtn');
-
-  let S={}, flipped=false, sel=null, legal=[];
-
-  function reset(){
-    S={
-      b:[
-        ['r','n','b','q','k','b','n','r'],
-        ['p','p','p','p','p','p','p','p'],
-        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-        ['P','P','P','P','P','P','P','P'],
-        ['R','N','B','Q','K','B','N','R'],
-      ],
-      t:'w', ep:null, hc:0, fm:1,
-      cast:{w:{K:true,Q:true}, b:{K:true,Q:true}},
-      h:[]
-    };
-    sel=null; legal=[];
-    render();
-  }
-
-  const inb=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
-  const own=(p,c)=>p&&(c==='w'?p===p.toUpperCase():p===p.toLowerCase());
-  const foe=(p,c)=>p&&!own(p,c);
-  function findK(c){
-    const k=c==='w'?'K':'k';
-    for(let r=0;r<8;r++)for(let x=0;x<8;x++)if(S.b[r][x]===k)return[r,x];
-    return null;
-  }
-
-  function gen(color=S.t){
-    const mv=[], add=(fr,fc,tr,tc,flags={})=>mv.push({from:[fr,fc],to:[tr,tc],flags});
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-      const p=S.b[r][c]; if(!own(p,color)) continue;
-      const u=p.toUpperCase();
-      if(u==='P'){
-        const dir=color==='w'?-1:1, start=color==='w'?6:1, promo=color==='w'?0:7;
-        if(inb(r+dir,c)&&!S.b[r+dir][c]){ add(r,c,r+dir,c,{promo:r+dir===promo}); if(r===start&&!S.b[r+2*dir][c]) add(r,c,r+2*dir,c,{double:true}); }
-        for(const dc of[-1,1]){ const nr=r+dir,nc=c+dc; if(inb(nr,nc)){ const t=S.b[nr][nc]; if(t&&foe(t,color)) add(r,c,nr,nc,{capture:true,promo:nr===promo}); } }
-        if(S.ep){ const ef=F.indexOf(S.ep[0]), er=Number(S.ep[1])-1; if(Math.abs(ef-c)===1 && er===r+dir) add(r,c,er,ef,{enpassant:true}); }
-      } else if(u==='N'){
-        for(const[dr,dc]of[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]]){const nr=r+dr,nc=c+dc;if(!inb(nr,nc))continue;const t=S.b[nr][nc];if(!t||foe(t,color))add(r,c,nr,nc,{capture:!!t});}
-      } else if(u==='B'||u==='R'||u==='Q'){
-        const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
-        for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ const t=S.b[nr][nc]; if(!t) add(r,c,nr,nc); else { if(foe(t,color)) add(r,c,nr,nc,{capture:true}); break; } nr+=dr; nc+=dc; }}
-      } else if(u==='K'){
-        for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc)) continue; const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t}); }
-        if(color==='w'&&r===7&&c===4){ if(S.cast.w.K&&!S.b[7][5]&&!S.b[7][6]) add(7,4,7,6,{castle:'K'}); if(S.cast.w.Q&&!S.b[7][3]&&!S.b[7][2]&&!S.b[7][1]) add(7,4,7,2,{castle:'Q'}); }
-        if(color==='b'&&r===0&&c===4){ if(S.cast.b.K&&!S.b[0][5]&&!S.b[0][6]) add(0,4,0,6,{castle:'K'}); if(S.cast.b.Q&&!S.b[0][3]&&!S.b[0][2]&&!S.b[0][1]) add(0,4,0,2,{castle:'Q'}); }
-      }
-    }
-    const legal=[]; for(const m of mv){ const snap=JSON.parse(JSON.stringify(S)); apply(m,true); if(!inCheck(color)) legal.push(m); S=snap; }
-    return legal;
-  }
-
-  function inCheck(color){
-    const k=findK(color); if(!k) return false; const [kr,kc]=k, foeC=color==='w'?'b':'w', atk=new Set(), mark=(r,c)=>atk.add(r+','+c);
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-      const p=S.b[r][c]; if(!own(p,foeC)) continue; const u=p.toUpperCase();
-      if(u==='P'){ const dir=foeC==='w'?-1:1; for(const dc of[-1,1]){const nr=r+dir,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
-      else if(u==='N'){ for(const[dr,dc] of [[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]]){const nr=r+dr,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
-      else if(u==='B'||u==='R'||u==='Q'){ const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
-        for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ mark(nr,nc); if(S.b[nr][nc]) break; nr+=dr; nc+=dc; }} }
-      else if(u==='K'){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(inb(nr,nc)) mark(nr,nc);} }
-    }
-    return atk.has(kr+','+kc);
-  }
-
-  function apply(m,dry=false){
-    const [fr,fc]=m.from,[tr,tc]=m.to, piece=S.b[fr][fc];
-    S.ep=null; S.b[tr][tc]=piece; S.b[fr][fc]=null;
-    if(m.flags?.enpassant){ const dir=S.t==='w'?-1:1; S.b[tr-dir][tc]=null; }
-    if(m.flags?.castle==='K'){ if(S.t==='w'){ S.b[7][5]=S.b[7][7]; S.b[7][7]=null; } else { S.b[0][5]=S.b[0][7]; S.b[0][7]=null; } }
-    if(m.flags?.castle==='Q'){ if(S.t==='w'){ S.b[7][3]=S.b[7][0]; S.b[7][0]=null; } else { S.b[0][3]=S.b[0][0]; S.b[0][0]=null; } }
-    if(m.flags?.double){ const file=F[fc], rank=S.t==='w'?6:3; S.ep=file+(rank+1); }
-    if(m.flags?.promo){ S.b[tr][tc]=(S.t==='w'?'Q':'q'); }
-    if(!dry){ S.h.push(toAlg(m)); S.t=(S.t==='w'?'b':'w'); if(S.t==='w') S.fm++; render(); }
-  }
-
-  function toAlg(m){
-    const Ff=F[m.from[1]], Ft=F[m.to[1]];
-    const Rf=8-m.from[0], Rt=8-m.to[0];
-    if(m.flags?.castle==='K') return 'O-O';
-    if(m.flags?.castle==='Q') return 'O-O-O';
-    return `${Ff}${Rf}-${Ft}${Rt}`;
-  }
-
-  const map = {P:'P',R:'R',N:'N',B:'B',Q:'Q',K:'K'};
-  const imgFor = (p, isWhite)=>{
-    const key = map[p.toUpperCase()];
-    if(isWhite){
-      // if you uploaded separate white files, put them in WHITE. Otherwise auto-tone from black:
-      return WHITE[key] || BLACK[key];
-    }
-    return BLACK[key];
-  };
-
-  const coord=(r,c)=> flipped ? [7-r,7-c] : [r,c];
-
-  function render(){
-    boardEl.innerHTML='';
-    turnEl.textContent = `Turn: ${S.t==='w'?'White (Artists)':'Black (Institutions)'}`;
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-      const [rr,cc]=coord(r,c);
-      const sq=document.createElement('div');
-      sq.className='sq '+(((r+c)%2===0)?'light':'dark');
-      sq.dataset.r=rr; sq.dataset.c=cc;
-
-      if(sel && sel[0]===rr && sel[1]===cc) sq.classList.add('sel');
-      if(legal.some(m=>m.to[0]===rr && m.to[1]===cc)) sq.classList.add('move');
-
-      const p=S.b[rr][cc];
-      if(p){
-        const holder=document.createElement('div'); holder.className='piece';
-        const img=document.createElement('img');
-        const isW = p===p.toUpperCase();
-        img.src = imgFor(p, isW);
-        if(isW && !WHITE[p.toUpperCase()]) holder.classList.add('whiteAuto');
-        holder.appendChild(img); sq.appendChild(holder);
-      }
-      boardEl.appendChild(sq);
-    }
-
-    movesEl.textContent = S.h.map((m,i)=> (i%2===0?`${Math.floor(i/2)+1}. `:'   ')+m ).join('\n');
-
-    boardEl.querySelectorAll('.sq').forEach(sq=>{
-      sq.onclick = ()=> {
-        const r=Number(sq.dataset.r), c=Number(sq.dataset.c);
-        const p=S.b[r][c];
-        if(p && ((S.t==='w' && p===p.toUpperCase()) || (S.t==='b' && p===p.toLowerCase()))){
-          sel=[r,c]; legal=gen(S.t).filter(m=>m.from[0]===r && m.from[1]===c); render();
-        } else if(sel){
-          const cand=legal.find(m=>m.to[0]===r && m.to[1]===c);
-          if(cand){ apply(cand); sel=null; legal=[]; } else { sel=null; legal=[]; render(); }
+        // Initialize the game
+        function initGame() {
+            createBoard();
+            setupPieces();
+            drawBoard();
+            updateEducationalContent("Welcome to Music Industry Chess! Make your first move as the creative side.");
         }
-      };
-    });
-  }
 
-  document.getElementById('flipBtn').onclick=()=>{flipped=!flipped; render();};
-  document.getElementById('resetBtn').onclick=reset;
+        // Create chess board squares
+        function createBoard() {
+            const boardSquares = document.getElementById('boardSquares');
+            boardSquares.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                gameState.board[row] = [];
+                for (let col = 0; col < 8; col++) {
+                    const isLight = (row + col) % 2 === 0;
+                    const square = document.createElement('rect');
+                    square.setAttribute('x', col * 70);
+                    square.setAttribute('y', row * 70);
+                    square.setAttribute('width', 70);
+                    square.setAttribute('height', 70);
+                    square.setAttribute('fill', isLight ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)');
+                    square.setAttribute('class', 'square');
+                    square.addEventListener('click', () => handleSquareClick(row, col));
+                    boardSquares.appendChild(square);
+                    
+                    gameState.board[row][col] = null;
+                }
+            }
+        }
 
-  // tiny error helper so a silent error doesn’t leave a blank board
-  window.onerror = (msg,src,ln,col,err)=>{ alert('Script error: '+msg+'\nCheck file paths and paste the full file.'); };
+        // Set up initial piece positions
+        function setupPieces() {
+            // Black pieces (Industry side)
+            setupRow(0, 'black', ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']);
+            setupRow(1, 'black', Array(8).fill('p'));
+            
+            // White pieces (Creative side)  
+            setupRow(6, 'white', Array(8).fill('p'));
+            setupRow(7, 'white', ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']);
+        }
 
-  reset();
-})();
-</script>
+        function setupRow(row, color, pieces) {
+            for (let col = 0; col < 8; col++) {
+                gameState.board[row][col] = color === 'white' ? pieces[col] : pieces[col].toUpperCase();
+            }
+        }
+
+        // Draw pieces on board
+        function drawBoard() {
+            const piecesGroup = document.getElementById('pieces');
+            piecesGroup.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece) {
+                        drawPiece(piece, row, col);
+                    }
+                }
+            }
+        }
+
+        // Draw individual piece
+        function drawPiece(piece, row, col) {
+            const isWhite = piece === piece.toLowerCase();
+            const type = piece.toLowerCase();
+            const color = isWhite ? 'white' : 'black';
+            
+            const group = document.createElement('g');
+            group.setAttribute('class', `piece ${color}`);
+            
+            // Base circle
+            const base = document.createElement('circle');
+            base.setAttribute('cx', col * 70 + 35);
+            base.setAttribute('cy', row * 70 + 35);
+            base.setAttribute('r', 25);
+            base.setAttribute('fill', getPieceColor(type, isWhite));
+            base.setAttribute('stroke', isWhite ? '#4ecdc4' : '#ff6b6b');
+            base.setAttribute('stroke-width', 2);
+            
+            // Piece symbol
+            const text = document.createElement('text');
+            text.setAttribute('x', col * 70 + 35);
+            text.setAttribute('y', row * 70 + 42);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'white');
+            text.setAttribute('font-weight', 'bold');
+            text.setAttribute('font-size', '20');
+            text.textContent = getPieceSymbol(type);
+            
+            group.appendChild(base);
+            group.appendChild(text);
+            document.getElementById('pieces').appendChild(group);
+        }
+
+        function getPieceColor(type, isWhite) {
+            const colors = {
+                'p': isWhite ? '#ef476f' : '#b91d47', // Artists
+                'r': isWhite ? '#ffd166' : '#d4a017', // Gatekeepers  
+                'n': isWhite ? '#118ab2' : '#0a5a78', // Lawyers
+                'b': isWhite ? '#06d6a0' : '#049c76', // Awards
+                'q': isWhite ? '#ff6b6b' : '#d42c2c', // Media
+                'k': isWhite ? '#4ecdc4' : '#1a8c8c'  // Government
+            };
+            return colors[type];
+        }
+
+        function getPieceSymbol(type) {
+            const symbols = {
+                'p': '♪', // Artist with microphone
+                'r': '⛩', // Gate
+                'n': '⚖', // Scales of justice
+                'b': '🏆', // Trophy
+                'q': '📡', // Broadcasting
+                'k': '⚖'  // Gavel (government)
+            };
+            return symbols[type];
+        }
+
+        // Handle square clicks
+        function handleSquareClick(row, col) {
+            if (gameState.aiThinking) return;
+            
+            const piece = gameState.board[row][col];
+            
+            // If a piece is selected and clicked on valid move square
+            if (gameState.selectedPiece) {
+                const move = gameState.validMoves.find(m => m.toRow === row && m.toCol === col);
+                if (move) {
+                    makeMove(move);
+                    return;
+                }
+            }
+            
+            // Select a piece
+            if (piece && ((gameState.currentPlayer === 'white' && piece === piece.toLowerCase()) || 
+                         (gameState.currentPlayer === 'black' && piece === piece.toUpperCase()))) {
+                selectPiece(row, col);
+            } else {
+                clearSelection();
+            }
+        }
+
+        // Select a piece and show valid moves
+        function selectPiece(row, col) {
+            clearSelection();
+            
+            gameState.selectedPiece = { row, col };
+            gameState.validMoves = getValidMoves(row, col);
+            
+            // Visual feedback
+            document.querySelectorAll('.square').forEach(square => {
+                const x = parseInt(square.getAttribute('x')) / 70;
+                const y = parseInt(square.getAttribute('y')) / 70;
+                if (x === col && y === row) {
+                    square.classList.add('selected');
+                }
+            });
+            
+            showValidMoves();
+        }
+
+        // Show valid moves visually
+        function showValidMoves() {
+            const validMovesGroup = document.getElementById('validMoves');
+            validMovesGroup.innerHTML = '';
+            
+            gameState.validMoves.forEach(move => {
+                const circle = document.createElement('circle');
+                circle.setAttribute('cx', move.toCol * 70 + 35);
+                circle.setAttribute('cy', move.toRow * 70 + 35);
+                circle.setAttribute('r', 8);
+                circle.setAttribute('fill', 'rgba(78, 205, 196, 0.6)');
+                validMovesGroup.appendChild(circle);
+            });
+        }
+
+        // Clear selection and valid moves
+        function clearSelection() {
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            
+            document.querySelectorAll('.square').forEach(square => {
+                square.classList.remove('selected');
+            });
+            
+            document.getElementById('validMoves').innerHTML = '';
+        }
+
+        // Get valid moves for a piece (simplified rules)
+        function getValidMoves(row, col) {
+            const piece = gameState.board[row][col];
+            const moves = [];
+            const isWhite = piece === piece.toLowerCase();
+            
+            // Simplified movement rules for demo
+            // In a full implementation, you'd have complete chess rules
+            const directions = {
+                'p': isWhite ? [[-1, 0], [-2, 0]] : [[1, 0], [2, 0]], // Pawns
+                'r': [[-1,0],[1,0],[0,-1],[0,1]], // Rooks
+                'n': [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[-1,2],[1,-2],[1,2]], // Knights
+                'b': [[-1,-1],[-1,1],[1,-1],[1,1]], // Bishops
+                'q': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]], // Queens
+                'k': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]] // Kings
+            };
+            
+            const type = piece.toLowerCase();
+            const pieceDirs = directions[type];
+            
+            pieceDirs.forEach(([dRow, dCol]) => {
+                let newRow = row + dRow;
+                let newCol = col + dCol;
+                
+                if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                    const target = gameState.board[newRow][newCol];
+                    if (!target || (isWhite && target === target.toUpperCase()) || 
+                        (!isWhite && target === target.toLowerCase())) {
+                        moves.push({
+                            fromRow: row,
+                            fromCol: col,
+                            toRow: newRow,
+                            toCol: newCol,
+                            piece: piece
+                        });
+                    }
+                }
+            });
+            
+            return moves;
+        }
+
+        // Make a move
+        function makeMove(move) {
+            const { fromRow, fromCol, toRow, toCol, piece } = move;
+            
+            // Update board
+            gameState.board[toRow][toCol] = piece;
+            gameState.board[fromRow][fromCol] = null;
+            
+            // Add to move history
+            const moveNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow}-${String.fromCharCode(97 + toCol)}${8 - toRow}`;
+            gameState.moveHistory.push(moveNotation);
+            
+            // Update UI
+            updateMoveList();
+            drawBoard();
+            clearSelection();
+            
+            // Switch player
+            gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+            
+            // Add educational insight
+            addEducationalInsight(move);
+            
+            // AI move if it's AI's turn
+            if (gameState.currentPlayer === 'black') {
+                setTimeout(() => makeAIMove(), 1000);
+            }
+        }
+
+        // AI move logic
+        function makeAIMove() {
+            if (gameState.aiThinking) return;
+            
+            gameState.aiThinking = true;
+            updateEducationalContent("🤖 AI is analyzing the industry landscape...");
+            
+            setTimeout(() => {
+                const personality = aiPersonalities[document.getElementById('aiPersonality').value];
+                const move = calculateAIMove(personality);
+                
+                if (move) {
+                    makeMove(move);
+                    addAIInsight(move, personality);
+                }
+                
+                gameState.aiThinking = false;
+            }, 1500);
+        }
+
+        // Calculate AI move based on personality
+        function calculateAIMove(personality) {
+            const possibleMoves = [];
+            
+            // Get all possible moves for black pieces
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece === piece.toUpperCase()) { // Black pieces
+                        const moves = getValidMoves(row, col);
+                        moves.forEach(move => {
+                            // Evaluate move based on personality
+                            const score = evaluateMove(move, personality);
+                            possibleMoves.push({ move, score });
+                        });
+                    }
+                }
+            }
+            
+            if (possibleMoves.length === 0) return null;
+            
+            // Sort by score and pick based on risk tolerance
+            possibleMoves.sort((a, b) => b.score - a.score);
+            
+            // Aggressive AI takes best move, cautious AI might mix it up
+            const topMoves = possibleMoves.slice(0, Math.max(3, Math.floor(possibleMoves.length * personality.riskTolerance)));
+            return topMoves[Math.floor(Math.random() * topMoves.length)].move;
+        }
+
+        // Evaluate a move based on AI personality
+        function evaluateMove(move, personality) {
+            let score = 0;
+            const targetPiece = gameState.board[move.toRow][move.toCol];
+            
+            // Material value
+            if (targetPiece) {
+                const value = pieceValues[targetPiece.toLowerCase()];
+                score += value * personality.aggression;
+            }
+            
+            // Position bonuses based on personality
+            if (personality.priorities.includes('control')) {
+                // Prefer center control
+                const centerDist = Math.abs(move.toRow - 3.5) + Math.abs(move.toCol - 3.5);
+                score += (4 - centerDist) * 0.5;
+            }
+            
+            if (personality.priorities.includes('artist_development')) {
+                // Prefer developing pawns (artists)
+                if (move.piece.toLowerCase() === 'p') {
+                    score += 0.3;
+                }
+            }
+            
+            return score;
+        }
+
+        // Update move list display
+        function updateMoveList() {
+            const moveList = document.getElementById('moveList');
+            moveList.innerHTML = '';
+            
+            gameState.moveHistory.forEach((move, index) => {
+                const moveItem = document.createElement('div');
+                moveItem.className = 'move-item';
+                moveItem.textContent = `${index + 1}. ${move}`;
+                moveList.appendChild(moveItem);
+            });
+            
+            moveList.scrollTop = moveList.scrollHeight;
+        }
+
+        // Add educational insight for a move
+        function addEducationalInsight(move) {
+            const pieceType = move.piece.toLowerCase();
+            const insights = {
+                'p': `Artist advancing toward audience recognition. In 2023, 86.2% of songs received under 1,000 streams.`,
+                'r': `Gatekeeper repositioning to control market access. Labels spend $3.9B annually on A&R.`,
+                'n': `Legal maneuver creating new contractual pathways. Lawyers enable complex industry deals.`,
+                'b': `Award influence shifting cultural status. Recognition can transform artist careers.`,
+                'q': `Media outlet amplifying reach across markets. Narrative power shapes industry outcomes.`,
+                'k': `Government ensuring regulatory stability. Policy changes affect all industry players.`
+            };
+            
+            updateEducationalContent(insights[pieceType]);
+        }
+
+        // Add AI thinking insight
+        function addAIInsight(move, personality) {
+            const pieceType = move.piece.toLowerCase();
+            const aiMessages = {
+                orca: `ORCA Strategy: Patient artist development. Focusing on long-term ecosystem growth.`,
+                major: `Major Label Approach: Aggressive market positioning. Seeking quick returns and control.`,
+                tech: `Tech Platform Move: Innovative positioning. Changing the fundamental game dynamics.`
+            };
+            
+            const thinkingElement = document.getElementById('aiThinking');
+            thinkingElement.innerHTML = `
+                <h3>🤖 ${personality.name} Analysis</h3>
+                <p>${aiMessages[document.getElementById('aiPersonality').value]}</p>
+                <p><em>${personality.style}</em></p>
+            `;
+        }
+
+        // Update educational content
+        function updateEducationalContent(message) {
+            const content = document.getElementById('educationalContent');
+            const insight = document.createElement('div');
+            insight.className = 'insight';
+            insight.innerHTML = `<p>${message}</p>`;
+            
+            // Keep only last 5 insights
+            const insights = content.querySelectorAll('.insight');
+            if (insights.length > 4) {
+                insights[0].remove();
+            }
+            
+            content.appendChild(insight);
+            content.scrollTop = content.scrollHeight;
+        }
+
+        // Reset game
+        function resetGame() {
+            gameState.board = [];
+            gameState.currentPlayer = 'white';
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            gameState.moveHistory = [];
+            gameState.aiThinking = false;
+            
+            initGame();
+            updateEducationalContent("New game started! You're playing as the creative side (white pieces).");
+            document.getElementById('aiThinking').innerHTML = `
+                <h3>🤖 AI Analysis</h3>
+                <p>Waiting for your move...</p>
+            `;
+        }
+
+        // Undo last move
+        function undoMove() {
+            if (gameState.moveHistory.length > 0) {
+                // Simple undo - in full implementation, you'd track game state history
+                resetGame();
+                updateEducationalContent("Game reset. The industry landscape has been restored.");
+            }
+        }
+
+        // Initialize the game when page loads
+        window.addEventListener('load', initGame);
+    </script>
 </body>
 </html>
