@@ -6,14 +6,11 @@
 <title>Music Industry Chess — Charcoal Edition</title>
 <style>
   :root{
-    --bg:#e9eaec;
-    --sq-light:#c8cbd0;
-    --sq-dark:#7b8087;
-    --ui:#ffffff;
-    --ink:#111;
-    --accent:#000;
+    --bg:#e9eaec; --sq-light:#c8cbd0; --sq-dark:#7b8087;
+    --ui:#ffffff; --ink:#111; --accent:#000;
   }
-  html,body{margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial,sans-serif;color:#000}
+  html,body{margin:0;padding:0;background:var(--bg);
+    font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial,sans-serif;color:#000}
 
   .wrap{max-width:1120px;margin:24px auto;padding:16px}
   .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
@@ -25,48 +22,33 @@
   .board{width:min(92vw,720px);aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid var(--accent);user-select:none;box-shadow:0 10px 24px rgba(0,0,0,.08);position:relative}
   .grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%}
 
-  .board::before{
-    content:"";
-    position:absolute; inset:0;
+  /* Charcoal vignette */
+  .board::before{content:"";position:absolute;inset:0;
     background:
       radial-gradient(1200px 1200px at 12% 8%, rgba(255,255,255,.08), transparent 60%),
       radial-gradient(1200px 1200px at 88% 92%, rgba(0,0,0,.10), transparent 60%);
-    mix-blend-mode:multiply;
-    pointer-events:none;
-  }
+    mix-blend-mode:multiply;pointer-events:none;}
 
-  .sq::after{
-    content:"";
-    position:absolute; inset:0;
-    opacity:.18;
+  /* Per-square grain */
+  .sq::after{content:"";position:absolute;inset:0;opacity:.18;
     background-image:url('data:image/svg+xml;utf8,\
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">\
         <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2"/></filter>\
         <rect width="100" height="100" filter="url(%23n)" fill="black" opacity="0.55"/>\
       </svg>');
-    background-size:120% 120%;
-    mix-blend-mode:multiply;
-    pointer-events:none;
-  }
+    background-size:120% 120%;mix-blend-mode:multiply;pointer-events:none;}
 
   .sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
-  .light{background:var(--sq-light)}
-  .dark{background:var(--sq-dark)}
+  .light{background:var(--sq-light)} .dark{background:var(--sq-dark)}
   .sq.sel{outline:4px solid rgba(0,0,0,.45);outline-offset:-4px}
   .sq.move{box-shadow:inset 0 0 0 4px rgba(0,0,0,.25)}
 
   .piece{width:84%;height:84%;display:flex;align-items:center;justify-content:center}
-  .piece img{
-    max-width:100%;max-height:100%;object-fit:contain;
-    background:transparent!important;border:none!important;box-shadow:none!important;
-    image-rendering:auto; 
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));
-  }
+  .piece img{max-width:100%;max-height:100%;object-fit:contain;background:transparent!important;border:none!important;box-shadow:none!important;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));}
   .whiteAuto img{
-    filter:
-      invert(1) grayscale(1) brightness(1.18) contrast(1.03)
-      drop-shadow(0 1px 0 rgba(0,0,0,.35))
-      drop-shadow(0 2px 4px rgba(0,0,0,.25));
+    filter: invert(1) grayscale(1) brightness(1.18) contrast(1.03)
+      drop-shadow(0 1px 0 rgba(0,0,0,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.25));
   }
 
   .side{flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px}
@@ -115,143 +97,185 @@
 </div>
 
 <script>
-  const WHITE_FROM_BLACK = true;
-  const ASSET_DIR = 'image/';
-  const V = '?v=9';
+/* ---------- SPRITES ---------- */
+const WHITE_FROM_BLACK = true;      // we only have black PNGs; white is auto-filtered
+const ASSET_DIR = 'image/';         // folder with your PNGs
+const V = '?v=10';                  // bump to beat cache after changes
 
-  const BLACK = {
-    P: ASSET_DIR + 'black-pawn.png'   + V,
-    R: ASSET_DIR + 'black-rook.png'   + V,
-    N: ASSET_DIR + 'black-knight.png' + V,
-    B: ASSET_DIR + 'black-bishop.png' + V,
-    Q: ASSET_DIR + 'black-queen.png'  + V,
-    K: ASSET_DIR + 'black-king.png'   + V,
+const BLACK = {
+  P: ASSET_DIR + 'black-pawn.png'   + V,
+  R: ASSET_DIR + 'black-rook.png'   + V,
+  N: ASSET_DIR + 'black-knight.png' + V,
+  B: ASSET_DIR + 'black-bishop.png' + V,
+  Q: ASSET_DIR + 'black-queen.png'  + V,
+  K: ASSET_DIR + 'black-king.png'   + V,
+};
+const WHITE = WHITE_FROM_BLACK ? {} : {
+  P: ASSET_DIR + 'white-pawn.png'   + V,
+  R: ASSET_DIR + 'white-rook.png'   + V,
+  N: ASSET_DIR + 'white-knight.png' + V,
+  B: ASSET_DIR + 'white-bishop.png' + V,
+  Q: ASSET_DIR + 'white-queen.png'  + V,
+  K: ASSET_DIR + 'white-king.png'   + V,
+};
+
+/* ---------- Simple chess engine + UI ---------- */
+(function(){
+  const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
+  const boardEl=document.getElementById('board');
+  const turnEl=document.getElementById('turn');
+  const movesEl=document.getElementById('moves');
+  const flipBtn=document.getElementById('flipBtn');
+  const resetBtn=document.getElementById('resetBtn');
+
+  let S={}, flipped=false, sel=null, legal=[];
+
+  function reset(){
+    S={
+      b:[
+        ['r','n','b','q','k','b','n','r'],
+        ['p','p','p','p','p','p','p','p'],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
+        ['P','P','P','P','P','P','P','P'],
+        ['R','N','B','Q','K','B','N','R'],
+      ],
+      t:'w', ep:null, hc:0, fm:1,
+      cast:{w:{K:true,Q:true}, b:{K:true,Q:true}},
+      h:[]
+    };
+    sel=null; legal=[];
+    render();
+  }
+
+  const inb=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
+  const own=(p,c)=>p&&(c==='w'?p===p.toUpperCase():p===p.toLowerCase());
+  const foe=(p,c)=>p&&!own(p,c);
+  function findK(c){
+    const k=c==='w'?'K':'k';
+    for(let r=0;r<8;r++)for(let x=0;x<8;x++)if(S.b[r][x]===k)return[r,x];
+    return null;
+  }
+
+  function gen(color=S.t){
+    const mv=[], add=(fr,fc,tr,tc,flags={})=>mv.push({from:[fr,fc],to:[tr,tc],flags});
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=S.b[r][c]; if(!own(p,color)) continue;
+      const u=p.toUpperCase();
+      if(u==='P'){
+        const dir=color==='w'?-1:1, start=color==='w'?6:1, promo=color==='w'?0:7;
+        if(inb(r+dir,c)&&!S.b[r+dir][c]){ add(r,c,r+dir,c,{promo:r+dir===promo}); if(r===start&&!S.b[r+2*dir][c]) add(r,c,r+2*dir,c,{double:true}); }
+        for(const dc of[-1,1]){ const nr=r+dir,nc=c+dc; if(inb(nr,nc)){ const t=S.b[nr][nc]; if(t&&foe(t,color)) add(r,c,nr,nc,{capture:true,promo:nr===promo}); } }
+        if(S.ep){ const ef=F.indexOf(S.ep[0]), er=Number(S.ep[1])-1; if(Math.abs(ef-c)===1 && er===r+dir) add(r,c,er,ef,{enpassant:true}); }
+      } else if(u==='N'){
+        for(const[dr,dc]of[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]]){const nr=r+dr,nc=c+dc;if(!inb(nr,nc))continue;const t=S.b[nr][nc];if(!t||foe(t,color))add(r,c,nr,nc,{capture:!!t});}
+      } else if(u==='B'||u==='R'||u==='Q'){
+        const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+        for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ const t=S.b[nr][nc]; if(!t) add(r,c,nr,nc); else { if(foe(t,color)) add(r,c,nr,nc,{capture:true}); break; } nr+=dr; nc+=dc; }}
+      } else if(u==='K'){
+        for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc)) continue; const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t}); }
+        if(color==='w'&&r===7&&c===4){ if(S.cast.w.K&&!S.b[7][5]&&!S.b[7][6]) add(7,4,7,6,{castle:'K'}); if(S.cast.w.Q&&!S.b[7][3]&&!S.b[7][2]&&!S.b[7][1]) add(7,4,7,2,{castle:'Q'}); }
+        if(color==='b'&&r===0&&c===4){ if(S.cast.b.K&&!S.b[0][5]&&!S.b[0][6]) add(0,4,0,6,{castle:'K'}); if(S.cast.b.Q&&!S.b[0][3]&&!S.b[0][2]&&!S.b[0][1]) add(0,4,0,2,{castle:'Q'}); }
+      }
+    }
+    const legal=[]; for(const m of mv){ const snap=JSON.parse(JSON.stringify(S)); apply(m,true); if(!inCheck(color)) legal.push(m); S=snap; }
+    return legal;
+  }
+
+  function inCheck(color){
+    const k=findK(color); if(!k) return false; const [kr,kc]=k, foeC=color==='w'?'b':'w', atk=new Set(), mark=(r,c)=>atk.add(r+','+c);
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=S.b[r][c]; if(!own(p,foeC)) continue; const u=p.toUpperCase();
+      if(u==='P'){ const dir=foeC==='w'?-1:1; for(const dc of[-1,1]){const nr=r+dir,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
+      else if(u==='N'){ for(const[dr,dc] of [[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]]){const nr=r+dr,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
+      else if(u==='B'||u==='R'||u==='Q'){ const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+        for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ mark(nr,nc); if(S.b[nr][nc]) break; nr+=dr; nc+=dc; }} }
+      else if(u==='K'){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(inb(nr,nc)) mark(nr,nc);} }
+    }
+    return atk.has(kr+','+kc);
+  }
+
+  function apply(m,dry=false){
+    const [fr,fc]=m.from,[tr,tc]=m.to, piece=S.b[fr][fc];
+    S.ep=null; S.b[tr][tc]=piece; S.b[fr][fc]=null;
+    if(m.flags?.enpassant){ const dir=S.t==='w'?-1:1; S.b[tr-dir][tc]=null; }
+    if(m.flags?.castle==='K'){ if(S.t==='w'){ S.b[7][5]=S.b[7][7]; S.b[7][7]=null; } else { S.b[0][5]=S.b[0][7]; S.b[0][7]=null; } }
+    if(m.flags?.castle==='Q'){ if(S.t==='w'){ S.b[7][3]=S.b[7][0]; S.b[7][0]=null; } else { S.b[0][3]=S.b[0][0]; S.b[0][0]=null; } }
+    if(m.flags?.double){ const file=F[fc], rank=S.t==='w'?6:3; S.ep=file+(rank+1); }
+    if(m.flags?.promo){ S.b[tr][tc]=(S.t==='w'?'Q':'q'); }
+    if(!dry){ S.h.push(toAlg(m)); S.t=(S.t==='w'?'b':'w'); if(S.t==='w') S.fm++; render(); }
+  }
+
+  function toAlg(m){
+    const Ff=F[m.from[1]], Ft=F[m.to[1]];
+    const Rf=8-m.from[0], Rt=8-m.to[0];
+    if(m.flags?.castle==='K') return 'O-O';
+    if(m.flags?.castle==='Q') return 'O-O-O';
+    return `${Ff}${Rf}-${Ft}${Rt}`;
+  }
+
+  const map = {P:'P',R:'R',N:'N',B:'B',Q:'Q',K:'K'};
+  const imgFor = (p, isWhite)=>{
+    const key = map[p.toUpperCase()];
+    if(isWhite){
+      // if you uploaded separate white files, put them in WHITE. Otherwise auto-tone from black:
+      return WHITE[key] || BLACK[key];
+    }
+    return BLACK[key];
   };
 
-  const WHITE = WHITE_FROM_BLACK ? {} : {
-    P: ASSET_DIR + 'white-pawn.png'   + V,
-    R: ASSET_DIR + 'white-rook.png'   + V,
-    N: ASSET_DIR + 'white-knight.png' + V,
-    B: ASSET_DIR + 'white-bishop.png' + V,
-    Q: ASSET_DIR + 'white-queen.png'  + V,
-    K: ASSET_DIR + 'white-king.png'   + V,
-  };
+  const coord=(r,c)=> flipped ? [7-r,7-c] : [r,c];
 
-  (function(){
-    const EMPTY=null, F=['a','b','c','d','e','f','g','h'];
-    const boardEl=document.getElementById('board');
-    const turnEl=document.getElementById('turn');
-    const movesEl=document.getElementById('moves');
-    const flipBtn=document.getElementById('flipBtn');
-    const resetBtn=document.getElementById('resetBtn');
+  function render(){
+    boardEl.innerHTML='';
+    turnEl.textContent = `Turn: ${S.t==='w'?'White (Artists)':'Black (Institutions)'}`;
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const [rr,cc]=coord(r,c);
+      const sq=document.createElement('div');
+      sq.className='sq '+(((r+c)%2===0)?'light':'dark');
+      sq.dataset.r=rr; sq.dataset.c=cc;
 
-    let S={}, flipped=false, sel=null, legal=[];
+      if(sel && sel[0]===rr && sel[1]===cc) sq.classList.add('sel');
+      if(legal.some(m=>m.to[0]===rr && m.to[1]===cc)) sq.classList.add('move');
 
-    function reset(){
-      S={
-        b:[
-          ['r','n','b','q','k','b','n','r'],
-          ['p','p','p','p','p','p','p','p'],
-          [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-          [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-          [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-          [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-          ['P','P','P','P','P','P','P','P'],
-          ['R','N','B','Q','K','B','N','R'],
-        ],
-        t:'w', ep:null, hc:0, fm:1,
-        cast:{w:{K:true,Q:true}, b:{K:true,Q:true}},
-        h:[]
-      };
-      sel=null; legal=[];
-      render();
+      const p=S.b[rr][cc];
+      if(p){
+        const holder=document.createElement('div'); holder.className='piece';
+        const img=document.createElement('img');
+        const isW = p===p.toUpperCase();
+        img.src = imgFor(p, isW);
+        if(isW && !WHITE[p.toUpperCase()]) holder.classList.add('whiteAuto');
+        holder.appendChild(img); sq.appendChild(holder);
+      }
+      boardEl.appendChild(sq);
     }
 
-    function inb(r,c){return r>=0 && r<8 && c>=0 && c<8;}
-    function own(p,color){return p && (color==='w'?p===p.toUpperCase():p===p.toLowerCase());}
-    function foe(p,color){return p && !own(p,color);}
-    function findK(color){
-      const k=color==='w'?'K':'k';
-      for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(S.b[r][c]===k)return[r,c];
-      return null;
-    }
+    movesEl.textContent = S.h.map((m,i)=> (i%2===0?`${Math.floor(i/2)+1}. `:'   ')+m ).join('\n');
 
-    function gen(color=S.t){
-      const mv=[]; const add=(fr,fc,tr,tc,flags={})=>mv.push({from:[fr,fc],to:[tr,tc],flags});
-      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const p=S.b[r][c]; if(!own(p,color)) continue;
-        const u=p.toUpperCase();
-        if(u==='P'){
-          const dir=color==='w'?-1:1, start=color==='w'?6:1, promo=color==='w'?0:7;
-          if(inb(r+dir,c) && !S.b[r+dir][c]){
-            add(r,c,r+dir,c,{promo:r+dir===promo});
-            if(r===start && !S.b[r+2*dir][c]) add(r,c,r+2*dir,c,{double:true});
-          }
-          for(const dc of[-1,1]){
-            const nr=r+dir,nc=c+dc; if(!inb(nr,nc)) continue;
-            const t=S.b[nr][nc]; if(t && foe(t,color)) add(r,c,nr,nc,{capture:true,promo:nr===promo});
-          }
-          if(S.ep){
-            const ef=F.indexOf(S.ep[0]), er=Number(S.ep[1])-1;
-            if(Math.abs(ef-c)===1 && er===r+dir) add(r,c,er,ef,{enpassant:true});
-          }
-        } else if(u==='N'){
-          const d=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
-          for(const[dr,dc]of d){const nr=r+dr,nc=c+dc;if(!inb(nr,nc))continue;
-            const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t});}
-        } else if(u==='B'||u==='R'||u==='Q'){
-          const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
-          for(const[dr,dc]of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){
-            const t=S.b[nr][nc];
-            if(!t) add(r,c,nr,nc); else { if(foe(t,color)) add(r,c,nr,nc,{capture:true}); break; }
-            nr+=dr; nc+=dc;
-          }}
-        } else if(u==='K'){
-          for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-            if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc)) continue;
-            const t=S.b[nr][nc]; if(!t||foe(t,color)) add(r,c,nr,nc,{capture:!!t});
-          }
-          if(color==='w' && r===7 && c===4){
-            if(S.cast.w.K && !S.b[7][5] && !S.b[7][6]) add(7,4,7,6,{castle:'K'});
-            if(S.cast.w.Q && !S.b[7][3] && !S.b[7][2] && !S.b[7][1]) add(7,4,7,2,{castle:'Q'});
-          }
-          if(color==='b' && r===0 && c===4){
-            if(S.cast.b.K && !S.b[0][5] && !S.b[0][6]) add(0,4,0,6,{castle:'K'});
-            if(S.cast.b.Q && !S.b[0][3] && !S.b[0][2] && !S.b[0][1]) add(0,4,0,2,{castle:'Q'});
-          }
+    boardEl.querySelectorAll('.sq').forEach(sq=>{
+      sq.onclick = ()=> {
+        const r=Number(sq.dataset.r), c=Number(sq.dataset.c);
+        const p=S.b[r][c];
+        if(p && ((S.t==='w' && p===p.toUpperCase()) || (S.t==='b' && p===p.toLowerCase()))){
+          sel=[r,c]; legal=gen(S.t).filter(m=>m.from[0]===r && m.from[1]===c); render();
+        } else if(sel){
+          const cand=legal.find(m=>m.to[0]===r && m.to[1]===c);
+          if(cand){ apply(cand); sel=null; legal=[]; } else { sel=null; legal=[]; render(); }
         }
-      }
-      const legal=[]; for(const m of mv){ const snap=JSON.parse(JSON.stringify(S)); apply(m,true); if(!inCheck(color)) legal.push(m); S=snap; }
-      return legal;
-    }
+      };
+    });
+  }
 
-    function inCheck(color){
-      const kpos=findK(color); if(!kpos) return false;
-      const [kr,kc]=kpos, foeC=color==='w'?'b':'w'; const atk=new Set(), mark=(r,c)=>atk.add(r+','+c);
-      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const p=S.b[r][c]; if(!own(p,foeC)) continue; const u=p.toUpperCase();
-        if(u==='P'){ const dir=foeC==='w'?-1:1; for(const dc of[-1,1]){const nr=r+dir,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
-        else if(u==='N'){ const d=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
-          for(const[dr,dc] of d){const nr=r+dr,nc=c+dc;if(inb(nr,nc)) mark(nr,nc);} }
-        else if(u==='B'||u==='R'||u==='Q'){ const dirs=[]; if(u!=='R') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(u!=='B') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
-          for(const[dr,dc] of dirs){let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ mark(nr,nc); if(S.b[nr][nc]) break; nr+=dr; nc+=dc; }} }
-        else if(u==='K'){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc) continue; const nr=r+dr,nc=c+dc; if(inb(nr,nc)) mark(nr,nc); } }
-      }
-      return atk.has(kr+','+kc);
-    }
+  document.getElementById('flipBtn').onclick=()=>{flipped=!flipped; render();};
+  document.getElementById('resetBtn').onclick=reset;
 
-    function apply(m,dry=false){
-      const [fr,fc]=m.from,[tr,tc]=m.to, piece=S.b[fr][fc];
-      S.ep=null; S.b[tr][tc]=piece; S.b[fr][fc]=null;
-      if(m.flags?.enpassant){ const dir=S.t==='w'?-1:1; S.b[tr-dir][tc]=null; }
-      if(m.flags?.castle==='K'){ if(S.t==='w'){ S.b[7][5]=S.b[7][7]; S.b[7][7]=null; } else { S.b[0][5]=S.b[0][7]; S.b[0][7]=null; } }
-      else if(m.flags?.castle==='Q'){ if(S.t==='w'){ S.b[7][3]=S.b[7][0]; S.b[7][0]=null; } else { S.b[0][3]=S.b[0][0]; S.b[0][0]=null; } }
-      if(m.flags?.double){ const Ff=['a','b','c','d','e','f','g','h'][fc], rank=S.t==='w'?6:3; S.ep=Ff+(rank+1); }
-      if(m.flags?.promo){ S.b[tr][tc]=(S.t==='w'?'Q':'q'); }
-      if(!dry){ S.h.push(toAlg(m)); S.t=(S.t==='w'?'b':'w'); if(S.t==='w') S.fm++; render(); }
-    }
+  // tiny error helper so a silent error doesn’t leave a blank board
+  window.onerror = (msg,src,ln,col,err)=>{ alert('Script error: '+msg+'\nCheck file paths and paste the full file.'); };
 
-    function toAlg(m){
-      const Ff=['a','b','c','d','e','f','g','h'][m.from[1]], Ft=['a','b','c','d','e','f','g','h'][m.to[1]];
-      const Rf=8-m.from[0], Rt=8-m.to[0];
-      if(m.flags?.castle==='K') return
+  reset();
+})();
+</script>
+</body>
+</html>
