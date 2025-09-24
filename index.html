@@ -13,18 +13,18 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #000;
             color: #fff;
             min-height: 100vh;
             padding: 20px;
+            line-height: 1.4;
         }
 
         .container {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            grid-template-rows: auto 1fr auto;
+            grid-template-columns: 280px 1fr 280px;
             gap: 20px;
-            max-width: 1800px;
+            max-width: 1600px;
             margin: 0 auto;
             min-height: 95vh;
         }
@@ -33,42 +33,40 @@
             grid-column: 1 / -1;
             text-align: center;
             padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
         }
 
         .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            font-weight: 300;
+            letter-spacing: 2px;
         }
 
         .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+            font-size: 1em;
+            opacity: 0.7;
+            font-style: italic;
         }
 
-        /* Fixed panel styles */
         .panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+            background: #111;
+            border: 1px solid #333;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
             min-height: 400px;
             display: flex;
             flex-direction: column;
         }
 
         .panel h2 {
-            font-size: 1.5em;
+            font-size: 1.2em;
             margin-bottom: 15px;
-            color: #4ecdc4;
-            border-bottom: 2px solid #4ecdc4;
-            padding-bottom: 5px;
+            font-weight: 400;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
         }
 
-        /* Game board container */
         .game-container {
             display: flex;
             flex-direction: column;
@@ -84,9 +82,7 @@
         #chessboard {
             width: 560px;
             height: 560px;
-            border: 3px solid #4ecdc4;
-            border-radius: 5px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #fff;
         }
 
         .controls {
@@ -95,86 +91,68 @@
             margin-top: 10px;
         }
 
-        button {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
+        button, select {
+            background: #000;
+            border: 1px solid #fff;
+            padding: 8px 16px;
             color: white;
-            font-weight: bold;
+            font-size: 0.9em;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
+        button:hover, select:hover {
+            background: #222;
         }
 
-        /* Move list styling */
         .move-list {
             flex: 1;
             overflow-y: auto;
             max-height: 300px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
         }
 
         .move-item {
-            padding: 8px;
-            margin: 5px 0;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            border-left: 3px solid #4ecdc4;
+            padding: 6px;
+            margin: 3px 0;
+            border-left: 2px solid #fff;
         }
 
-        /* Legend styling */
         .legend-item {
             display: flex;
             align-items: center;
-            margin: 10px 0;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
+            margin: 8px 0;
+            padding: 6px;
+            font-size: 0.9em;
         }
 
         .legend-icon {
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             margin-right: 10px;
-            border-radius: 3px;
+            border: 1px solid #fff;
         }
 
-        /* Educational content */
         .educational-content {
             flex: 1;
             overflow-y: auto;
+            font-size: 0.9em;
         }
 
         .insight {
-            background: rgba(78, 205, 196, 0.1);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border-left: 4px solid #4ecdc4;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 2px solid #fff;
+            background: #0a0a0a;
         }
 
         .ai-thinking {
-            background: rgba(255, 107, 107, 0.1);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border-left: 4px solid #ff6b6b;
-        }
-
-        /* Responsive design */
-        @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto auto;
-            }
-            
-            #chessboard {
-                width: 400px;
-                height: 400px;
-            }
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 2px solid #666;
+            background: #0a0a0a;
+            font-style: italic;
         }
 
         .square {
@@ -182,70 +160,53 @@
         }
 
         .square:hover {
-            filter: brightness(1.2);
+            fill: #222;
         }
 
         .selected {
-            filter: brightness(1.3) !important;
-            box-shadow: inset 0 0 10px rgba(78, 205, 196, 0.8);
+            fill: #333 !important;
         }
 
-        .valid-move {
-            position: relative;
-        }
-
-        .valid-move::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: rgba(78, 205, 196, 0.5);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            #chessboard {
+                width: 400px;
+                height: 400px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎵 Music Industry Chess</h1>
-            <p>A Game of Strategy, Power, and Perspective</p>
+            <h1>Music Industry Chess</h1>
+            <p>Speaks less but says more</p>
         </div>
 
-        <!-- Left Panel -->
         <div class="panel">
-            <h2>MOVE LIST</h2>
-            <div class="move-list" id="moveList">
-                <!-- Moves will be added here -->
-            </div>
-            
+            <h2>MOVES</h2>
+            <div class="move-list" id="moveList"></div>
             <div class="controls">
                 <button onclick="resetGame()">New Game</button>
                 <button onclick="undoMove()">Undo</button>
             </div>
         </div>
 
-        <!-- Center Game Board -->
         <div class="game-container">
             <div class="board-container">
                 <svg id="chessboard" width="560" height="560" viewBox="0 0 560 560">
+                    <!-- Chess board -->
+                    <rect width="560" height="560" fill="#000"/>
+                    
                     <!-- Board squares -->
-                    <pattern id="consumerPattern" patternUnits="userSpaceOnUse" width="70" height="70">
-                        <rect width="70" height="70" fill="#2a2a4a"/>
-                        <circle cx="35" cy="35" r="2" fill="#4ecdc4" opacity="0.3"/>
-                    </pattern>
-                    
-                    <rect width="560" height="560" fill="url(#consumerPattern)"/>
-                    
-                    <!-- Chess squares overlay -->
                     <g id="boardSquares"></g>
                     
-                    <!-- Pieces will be added here -->
+                    <!-- Pieces -->
                     <g id="pieces"></g>
                     
-                    <!-- Valid move indicators -->
+                    <!-- Valid moves -->
                     <g id="validMoves"></g>
                 </svg>
             </div>
@@ -253,51 +214,48 @@
             <div class="controls">
                 <button onclick="makeAIMove()">AI Move</button>
                 <select id="aiPersonality">
-                    <option value="orca">ORCA Independent</option>
+                    <option value="orca">ORCA</option>
                     <option value="major">Major Label</option>
                     <option value="tech">Tech Platform</option>
                 </select>
             </div>
         </div>
 
-        <!-- Right Panel -->
         <div class="panel">
-            <h2>INDUSTRY INSIGHTS</h2>
+            <h2>INDUSTRY</h2>
             <div class="educational-content" id="educationalContent">
                 <div class="insight">
-                    <h3>🎯 The Board = Consumers</h3>
-                    <p>Every square represents potential fans. The entire industry moves across consumer attention.</p>
+                    <p>Board = Consumers. Pieces = Industry roles.</p>
                 </div>
                 <div class="ai-thinking" id="aiThinking">
-                    <h3>🤖 AI Analysis</h3>
-                    <p>Waiting for game to start...</p>
+                    <p>AI ready.</p>
                 </div>
             </div>
             
-            <h2 style="margin-top: 20px;">LEGEND</h2>
+            <h2>PIECES</h2>
             <div class="legend">
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #4ecdc4;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>King = Government</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #ff6b6b;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>Queen = Media</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #ffd166;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>Rook = Gatekeepers</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #06d6a0;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>Bishop = Awards</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #118ab2;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>Knight = Lawyers</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #ef476f;"></div>
+                    <div class="legend-icon" style="background: #000;"></div>
                     <span>Pawn = Artists</span>
                 </div>
             </div>
@@ -315,50 +273,34 @@
             aiThinking: false
         };
 
-        // Music Industry AI Personalities
+        // AI Personalities
         const aiPersonalities = {
             orca: {
-                name: "ORCA Independent",
-                style: "Patient developer focused on long-term artist growth",
-                riskTolerance: 0.3,
-                aggression: 0.4,
-                priorities: ['artist_development', 'sustainability', 'community']
+                name: "ORCA",
+                style: "Artist development focus",
+                risk: 0.3
             },
             major: {
-                name: "Major Label",
-                style: "Aggressive consolidator focused on market control", 
-                riskTolerance: 0.6,
-                aggression: 0.8,
-                priorities: ['market_share', 'quick_returns', 'control']
+                name: "Major Label", 
+                style: "Market control focus",
+                risk: 0.6
             },
             tech: {
-                name: "Tech Platform", 
-                style: "Innovative disruptor changing industry rules",
-                riskTolerance: 0.7,
-                aggression: 0.5,
-                priorities: ['scale', 'data_control', 'innovation']
+                name: "Tech Platform",
+                style: "Disruption focus", 
+                risk: 0.7
             }
         };
 
-        // Piece values based on music industry impact
-        const pieceValues = {
-            'p': 1,   // Artist - foundational but low individual value
-            'r': 5,   // Gatekeeper - controls access
-            'n': 3,   // Lawyer - tactical specialist  
-            'b': 3,   // Award - influences status
-            'q': 9,   // Media - most powerful influencer
-            'k': 1000 // Government - game-ending importance
-        };
-
-        // Initialize the game
+        // Initialize game
         function initGame() {
             createBoard();
             setupPieces();
             drawBoard();
-            updateEducationalContent("Welcome to Music Industry Chess! Make your first move as the creative side.");
+            updateEducationalContent("Game started. White moves first.");
         }
 
-        // Create chess board squares
+        // Create board squares
         function createBoard() {
             const boardSquares = document.getElementById('boardSquares');
             boardSquares.innerHTML = '';
@@ -372,7 +314,7 @@
                     square.setAttribute('y', row * 70);
                     square.setAttribute('width', 70);
                     square.setAttribute('height', 70);
-                    square.setAttribute('fill', isLight ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)');
+                    square.setAttribute('fill', isLight ? '#000' : '#111');
                     square.setAttribute('class', 'square');
                     square.addEventListener('click', () => handleSquareClick(row, col));
                     boardSquares.appendChild(square);
@@ -382,13 +324,13 @@
             }
         }
 
-        // Set up initial piece positions
+        // Setup pieces
         function setupPieces() {
-            // Black pieces (Industry side)
+            // Black pieces (Industry)
             setupRow(0, 'black', ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']);
             setupRow(1, 'black', Array(8).fill('p'));
             
-            // White pieces (Creative side)  
+            // White pieces (Creative)
             setupRow(6, 'white', Array(8).fill('p'));
             setupRow(7, 'white', ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']);
         }
@@ -399,7 +341,7 @@
             }
         }
 
-        // Draw pieces on board
+        // Draw custom SVG pieces
         function drawBoard() {
             const piecesGroup = document.getElementById('pieces');
             piecesGroup.innerHTML = '';
@@ -408,76 +350,172 @@
                 for (let col = 0; col < 8; col++) {
                     const piece = gameState.board[row][col];
                     if (piece) {
-                        drawPiece(piece, row, col);
+                        drawCustomPiece(piece, row, col);
                     }
                 }
             }
         }
 
-        // Draw individual piece
-        function drawPiece(piece, row, col) {
+        function drawCustomPiece(piece, row, col) {
             const isWhite = piece === piece.toLowerCase();
             const type = piece.toLowerCase();
-            const color = isWhite ? 'white' : 'black';
+            const x = col * 70 + 35;
+            const y = row * 70 + 35;
             
             const group = document.createElement('g');
-            group.setAttribute('class', `piece ${color}`);
+            group.setAttribute('class', `piece ${isWhite ? 'white' : 'black'}`);
             
             // Base circle
             const base = document.createElement('circle');
-            base.setAttribute('cx', col * 70 + 35);
-            base.setAttribute('cy', row * 70 + 35);
-            base.setAttribute('r', 25);
-            base.setAttribute('fill', getPieceColor(type, isWhite));
-            base.setAttribute('stroke', isWhite ? '#4ecdc4' : '#ff6b6b');
+            base.setAttribute('cx', x);
+            base.setAttribute('cy', y);
+            base.setAttribute('r', 28);
+            base.setAttribute('fill', isWhite ? '#fff' : '#000');
+            base.setAttribute('stroke', isWhite ? '#000' : '#fff');
             base.setAttribute('stroke-width', 2);
             
-            // Piece symbol
-            const text = document.createElement('text');
-            text.setAttribute('x', col * 70 + 35);
-            text.setAttribute('y', row * 70 + 42);
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('fill', 'white');
-            text.setAttribute('font-weight', 'bold');
-            text.setAttribute('font-size', '20');
-            text.textContent = getPieceSymbol(type);
+            // Custom piece designs
+            const symbol = createPieceSymbol(type, x, y, isWhite);
             
             group.appendChild(base);
-            group.appendChild(text);
+            group.appendChild(symbol);
             document.getElementById('pieces').appendChild(group);
         }
 
-        function getPieceColor(type, isWhite) {
-            const colors = {
-                'p': isWhite ? '#ef476f' : '#b91d47', // Artists
-                'r': isWhite ? '#ffd166' : '#d4a017', // Gatekeepers  
-                'n': isWhite ? '#118ab2' : '#0a5a78', // Lawyers
-                'b': isWhite ? '#06d6a0' : '#049c76', // Awards
-                'q': isWhite ? '#ff6b6b' : '#d42c2c', // Media
-                'k': isWhite ? '#4ecdc4' : '#1a8c8c'  // Government
-            };
-            return colors[type];
+        function createPieceSymbol(type, x, y, isWhite) {
+            const group = document.createElement('g');
+            const strokeColor = isWhite ? '#000' : '#fff';
+            
+            switch(type) {
+                case 'p': // Artist with microphone
+                    const mic = document.createElement('path');
+                    mic.setAttribute('d', `M ${x-8} ${y-12} L ${x} ${y-8} L ${x+8} ${y-12} M ${x} ${y-8} L ${x} ${y+8}`);
+                    mic.setAttribute('stroke', strokeColor);
+                    mic.setAttribute('stroke-width', '2');
+                    mic.setAttribute('fill', 'none');
+                    group.appendChild(mic);
+                    break;
+                    
+                case 'r': // Gatekeeper as gate
+                    const gate = document.createElement('rect');
+                    gate.setAttribute('x', x-10);
+                    gate.setAttribute('y', y-15);
+                    gate.setAttribute('width', 20);
+                    gate.setAttribute('height', 30);
+                    gate.setAttribute('stroke', strokeColor);
+                    gate.setAttribute('stroke-width', '2');
+                    gate.setAttribute('fill', 'none');
+                    group.appendChild(gate);
+                    break;
+                    
+                case 'n': // Lawyer with scales
+                    const scales = document.createElement('g');
+                    // Beam
+                    const beam = document.createElement('line');
+                    beam.setAttribute('x1', x-12);
+                    beam.setAttribute('y1', y);
+                    beam.setAttribute('x2', x+12);
+                    beam.setAttribute('y2', y);
+                    beam.setAttribute('stroke', strokeColor);
+                    beam.setAttribute('stroke-width', '2');
+                    scales.appendChild(beam);
+                    // Base
+                    const base = document.createElement('line');
+                    base.setAttribute('x1', x);
+                    base.setAttribute('y1', y);
+                    base.setAttribute('x2', x);
+                    base.setAttribute('y2', y+10);
+                    base.setAttribute('stroke', strokeColor);
+                    base.setAttribute('stroke-width', '2');
+                    scales.appendChild(base);
+                    // Pans
+                    const pan1 = document.createElement('circle');
+                    pan1.setAttribute('cx', x-8);
+                    pan1.setAttribute('cy', y-3);
+                    pan1.setAttribute('r', 4);
+                    pan1.setAttribute('stroke', strokeColor);
+                    pan1.setAttribute('stroke-width', '1');
+                    pan1.setAttribute('fill', 'none');
+                    scales.appendChild(pan1);
+                    const pan2 = document.createElement('circle');
+                    pan2.setAttribute('cx', x+8);
+                    pan2.setAttribute('cy', y-3);
+                    pan2.setAttribute('r', 4);
+                    pan2.setAttribute('stroke', strokeColor);
+                    pan2.setAttribute('stroke-width', '1');
+                    pan2.setAttribute('fill', 'none');
+                    scales.appendChild(pan2);
+                    group.appendChild(scales);
+                    break;
+                    
+                case 'b': // Award as trophy
+                    const trophy = document.createElement('g');
+                    const cup = document.createElement('path');
+                    cup.setAttribute('d', `M ${x-6} ${y-8} Q ${x} ${y-12} ${x+6} ${y-8} L ${x+4} ${y+8} Q ${x} ${y+10} ${x-4} ${y+8} Z`);
+                    cup.setAttribute('stroke', strokeColor);
+                    cup.setAttribute('stroke-width', '2');
+                    cup.setAttribute('fill', 'none');
+                    trophy.appendChild(cup);
+                    group.appendChild(trophy);
+                    break;
+                    
+                case 'q': // Media scattering seeds
+                    const media = document.createElement('g');
+                    const circle = document.createElement('circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('r', 10);
+                    circle.setAttribute('stroke', strokeColor);
+                    circle.setAttribute('stroke-width', '2');
+                    circle.setAttribute('fill', 'none');
+                    media.appendChild(circle);
+                    // Seeds
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (i * Math.PI / 2);
+                        const seed = document.createElement('circle');
+                        seed.setAttribute('cx', x + Math.cos(angle) * 16);
+                        seed.setAttribute('cy', y + Math.sin(angle) * 16);
+                        seed.setAttribute('r', 2);
+                        seed.setAttribute('fill', strokeColor);
+                        media.appendChild(seed);
+                    }
+                    group.appendChild(media);
+                    break;
+                    
+                case 'k': // Government with gavel
+                    const gavel = document.createElement('g');
+                    // Handle
+                    const handle = document.createElement('line');
+                    handle.setAttribute('x1', x-8);
+                    handle.setAttribute('y1', y);
+                    handle.setAttribute('x2', x+8);
+                    handle.setAttribute('y2', y);
+                    handle.setAttribute('stroke', strokeColor);
+                    handle.setAttribute('stroke-width', '3');
+                    gavel.appendChild(handle);
+                    // Head
+                    const head = document.createElement('rect');
+                    head.setAttribute('x', x+4);
+                    head.setAttribute('y', y-4);
+                    head.setAttribute('width', 8);
+                    head.setAttribute('height', 8);
+                    head.setAttribute('stroke', strokeColor);
+                    head.setAttribute('stroke-width', '1');
+                    head.setAttribute('fill', strokeColor);
+                    gavel.appendChild(head);
+                    group.appendChild(gavel);
+                    break;
+            }
+            
+            return group;
         }
 
-        function getPieceSymbol(type) {
-            const symbols = {
-                'p': '♪', // Artist with microphone
-                'r': '⛩', // Gate
-                'n': '⚖', // Scales of justice
-                'b': '🏆', // Trophy
-                'q': '📡', // Broadcasting
-                'k': '⚖'  // Gavel (government)
-            };
-            return symbols[type];
-        }
-
-        // Handle square clicks
+        // Game logic
         function handleSquareClick(row, col) {
             if (gameState.aiThinking) return;
             
             const piece = gameState.board[row][col];
             
-            // If a piece is selected and clicked on valid move square
             if (gameState.selectedPiece) {
                 const move = gameState.validMoves.find(m => m.toRow === row && m.toCol === col);
                 if (move) {
@@ -486,7 +524,6 @@
                 }
             }
             
-            // Select a piece
             if (piece && ((gameState.currentPlayer === 'white' && piece === piece.toLowerCase()) || 
                          (gameState.currentPlayer === 'black' && piece === piece.toUpperCase()))) {
                 selectPiece(row, col);
@@ -495,26 +532,13 @@
             }
         }
 
-        // Select a piece and show valid moves
         function selectPiece(row, col) {
             clearSelection();
-            
             gameState.selectedPiece = { row, col };
             gameState.validMoves = getValidMoves(row, col);
-            
-            // Visual feedback
-            document.querySelectorAll('.square').forEach(square => {
-                const x = parseInt(square.getAttribute('x')) / 70;
-                const y = parseInt(square.getAttribute('y')) / 70;
-                if (x === col && y === row) {
-                    square.classList.add('selected');
-                }
-            });
-            
             showValidMoves();
         }
 
-        // Show valid moves visually
         function showValidMoves() {
             const validMovesGroup = document.getElementById('validMoves');
             validMovesGroup.innerHTML = '';
@@ -523,39 +547,30 @@
                 const circle = document.createElement('circle');
                 circle.setAttribute('cx', move.toCol * 70 + 35);
                 circle.setAttribute('cy', move.toRow * 70 + 35);
-                circle.setAttribute('r', 8);
-                circle.setAttribute('fill', 'rgba(78, 205, 196, 0.6)');
+                circle.setAttribute('r', 6);
+                circle.setAttribute('fill', 'rgba(255, 255, 255, 0.3)');
                 validMovesGroup.appendChild(circle);
             });
         }
 
-        // Clear selection and valid moves
         function clearSelection() {
             gameState.selectedPiece = null;
             gameState.validMoves = [];
-            
-            document.querySelectorAll('.square').forEach(square => {
-                square.classList.remove('selected');
-            });
-            
             document.getElementById('validMoves').innerHTML = '';
         }
 
-        // Get valid moves for a piece (simplified rules)
         function getValidMoves(row, col) {
             const piece = gameState.board[row][col];
             const moves = [];
             const isWhite = piece === piece.toLowerCase();
             
-            // Simplified movement rules for demo
-            // In a full implementation, you'd have complete chess rules
             const directions = {
-                'p': isWhite ? [[-1, 0], [-2, 0]] : [[1, 0], [2, 0]], // Pawns
-                'r': [[-1,0],[1,0],[0,-1],[0,1]], // Rooks
-                'n': [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[-1,2],[1,-2],[1,2]], // Knights
-                'b': [[-1,-1],[-1,1],[1,-1],[1,1]], // Bishops
-                'q': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]], // Queens
-                'k': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]] // Kings
+                'p': isWhite ? [[-1, 0]] : [[1, 0]],
+                'r': [[-1,0],[1,0],[0,-1],[0,1]],
+                'n': [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[-1,2],[1,-2],[1,2]],
+                'b': [[-1,-1],[-1,1],[1,-1],[1,1]],
+                'q': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],
+                'k': [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]
             };
             
             const type = piece.toLowerCase();
@@ -569,13 +584,7 @@
                     const target = gameState.board[newRow][newCol];
                     if (!target || (isWhite && target === target.toUpperCase()) || 
                         (!isWhite && target === target.toLowerCase())) {
-                        moves.push({
-                            fromRow: row,
-                            fromCol: col,
-                            toRow: newRow,
-                            toCol: newCol,
-                            piece: piece
-                        });
+                        moves.push({ fromRow: row, fromCol: col, toRow: newRow, toCol: newCol, piece: piece });
                     }
                 }
             });
@@ -583,41 +592,32 @@
             return moves;
         }
 
-        // Make a move
         function makeMove(move) {
             const { fromRow, fromCol, toRow, toCol, piece } = move;
             
-            // Update board
             gameState.board[toRow][toCol] = piece;
             gameState.board[fromRow][fromCol] = null;
             
-            // Add to move history
             const moveNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow}-${String.fromCharCode(97 + toCol)}${8 - toRow}`;
             gameState.moveHistory.push(moveNotation);
             
-            // Update UI
             updateMoveList();
             drawBoard();
             clearSelection();
             
-            // Switch player
             gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
-            
-            // Add educational insight
             addEducationalInsight(move);
             
-            // AI move if it's AI's turn
             if (gameState.currentPlayer === 'black') {
                 setTimeout(() => makeAIMove(), 1000);
             }
         }
 
-        // AI move logic
         function makeAIMove() {
             if (gameState.aiThinking) return;
             
             gameState.aiThinking = true;
-            updateEducationalContent("🤖 AI is analyzing the industry landscape...");
+            updateEducationalContent("AI thinking...");
             
             setTimeout(() => {
                 const personality = aiPersonalities[document.getElementById('aiPersonality').value];
@@ -632,18 +632,15 @@
             }, 1500);
         }
 
-        // Calculate AI move based on personality
         function calculateAIMove(personality) {
             const possibleMoves = [];
             
-            // Get all possible moves for black pieces
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
                     const piece = gameState.board[row][col];
-                    if (piece && piece === piece.toUpperCase()) { // Black pieces
+                    if (piece && piece === piece.toUpperCase()) {
                         const moves = getValidMoves(row, col);
                         moves.forEach(move => {
-                            // Evaluate move based on personality
                             const score = evaluateMove(move, personality);
                             possibleMoves.push({ move, score });
                         });
@@ -653,43 +650,23 @@
             
             if (possibleMoves.length === 0) return null;
             
-            // Sort by score and pick based on risk tolerance
             possibleMoves.sort((a, b) => b.score - a.score);
-            
-            // Aggressive AI takes best move, cautious AI might mix it up
-            const topMoves = possibleMoves.slice(0, Math.max(3, Math.floor(possibleMoves.length * personality.riskTolerance)));
+            const topMoves = possibleMoves.slice(0, Math.max(3, Math.floor(possibleMoves.length * personality.risk)));
             return topMoves[Math.floor(Math.random() * topMoves.length)].move;
         }
 
-        // Evaluate a move based on AI personality
         function evaluateMove(move, personality) {
             let score = 0;
             const targetPiece = gameState.board[move.toRow][move.toCol];
             
-            // Material value
             if (targetPiece) {
-                const value = pieceValues[targetPiece.toLowerCase()];
-                score += value * personality.aggression;
-            }
-            
-            // Position bonuses based on personality
-            if (personality.priorities.includes('control')) {
-                // Prefer center control
-                const centerDist = Math.abs(move.toRow - 3.5) + Math.abs(move.toCol - 3.5);
-                score += (4 - centerDist) * 0.5;
-            }
-            
-            if (personality.priorities.includes('artist_development')) {
-                // Prefer developing pawns (artists)
-                if (move.piece.toLowerCase() === 'p') {
-                    score += 0.3;
-                }
+                const values = { 'p': 1, 'r': 5, 'n': 3, 'b': 3, 'q': 9, 'k': 1000 };
+                score += values[targetPiece.toLowerCase()] * personality.risk;
             }
             
             return score;
         }
 
-        // Update move list display
         function updateMoveList() {
             const moveList = document.getElementById('moveList');
             moveList.innerHTML = '';
@@ -700,60 +677,38 @@
                 moveItem.textContent = `${index + 1}. ${move}`;
                 moveList.appendChild(moveItem);
             });
-            
-            moveList.scrollTop = moveList.scrollHeight;
         }
 
-        // Add educational insight for a move
         function addEducationalInsight(move) {
-            const pieceType = move.piece.toLowerCase();
             const insights = {
-                'p': `Artist advancing toward audience recognition. In 2023, 86.2% of songs received under 1,000 streams.`,
-                'r': `Gatekeeper repositioning to control market access. Labels spend $3.9B annually on A&R.`,
-                'n': `Legal maneuver creating new contractual pathways. Lawyers enable complex industry deals.`,
-                'b': `Award influence shifting cultural status. Recognition can transform artist careers.`,
-                'q': `Media outlet amplifying reach across markets. Narrative power shapes industry outcomes.`,
-                'k': `Government ensuring regulatory stability. Policy changes affect all industry players.`
+                'p': "Artist advancing.",
+                'r': "Gatekeeper controlling access.",
+                'n': "Legal maneuver.",
+                'b': "Award influence shifting.",
+                'q': "Media amplifying reach.",
+                'k': "Government regulating."
             };
             
-            updateEducationalContent(insights[pieceType]);
+            updateEducationalContent(insights[move.piece.toLowerCase()]);
         }
 
-        // Add AI thinking insight
         function addAIInsight(move, personality) {
-            const pieceType = move.piece.toLowerCase();
-            const aiMessages = {
-                orca: `ORCA Strategy: Patient artist development. Focusing on long-term ecosystem growth.`,
-                major: `Major Label Approach: Aggressive market positioning. Seeking quick returns and control.`,
-                tech: `Tech Platform Move: Innovative positioning. Changing the fundamental game dynamics.`
-            };
-            
             const thinkingElement = document.getElementById('aiThinking');
-            thinkingElement.innerHTML = `
-                <h3>🤖 ${personality.name} Analysis</h3>
-                <p>${aiMessages[document.getElementById('aiPersonality').value]}</p>
-                <p><em>${personality.style}</em></p>
-            `;
+            thinkingElement.innerHTML = `<p>${personality.name}: ${personality.style}</p>`;
         }
 
-        // Update educational content
         function updateEducationalContent(message) {
             const content = document.getElementById('educationalContent');
             const insight = document.createElement('div');
             insight.className = 'insight';
             insight.innerHTML = `<p>${message}</p>`;
             
-            // Keep only last 5 insights
             const insights = content.querySelectorAll('.insight');
-            if (insights.length > 4) {
-                insights[0].remove();
-            }
+            if (insights.length > 4) insights[0].remove();
             
             content.appendChild(insight);
-            content.scrollTop = content.scrollHeight;
         }
 
-        // Reset game
         function resetGame() {
             gameState.board = [];
             gameState.currentPlayer = 'white';
@@ -763,23 +718,13 @@
             gameState.aiThinking = false;
             
             initGame();
-            updateEducationalContent("New game started! You're playing as the creative side (white pieces).");
-            document.getElementById('aiThinking').innerHTML = `
-                <h3>🤖 AI Analysis</h3>
-                <p>Waiting for your move...</p>
-            `;
+            updateEducationalContent("New game started.");
         }
 
-        // Undo last move
         function undoMove() {
-            if (gameState.moveHistory.length > 0) {
-                // Simple undo - in full implementation, you'd track game state history
-                resetGame();
-                updateEducationalContent("Game reset. The industry landscape has been restored.");
-            }
+            if (gameState.moveHistory.length > 0) resetGame();
         }
 
-        // Initialize the game when page loads
         window.addEventListener('load', initGame);
     </script>
 </body>
