@@ -222,12 +222,13 @@
       }
     }
 
-    function onSquare(r, c) {
+   function onSquare(r, c) {
       if (state.aiThinking || state.gameOver) {
         return;
       }
       const piece = state.board[r][c];
       
+      // If we have a piece selected, try to move first
       if (state.selected) {
         const [sr, sc] = state.selected;
         const mv = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
@@ -235,11 +236,24 @@
           applyMove(mv);
           return;
         }
+        // If clicking on a different piece of the same color, select that piece instead
+        if (piece) {
+          const isWhite = piece === piece.toLowerCase();
+          if ((state.currentPlayer === 'white' && isWhite) || (state.currentPlayer === 'black' && !isWhite)) {
+            state.selected = [r, c];
+            state.validMoves = getLegalMoves(state.board, r, c, state.enPassantTarget, state.castlingRights, state.currentPlayer === 'white');
+            showValid();
+            return;
+          }
+        }
+        // Otherwise deselect
         state.selected = null;
         state.validMoves = [];
         showValid();
+        return;
       }
 
+      // No piece selected yet - select if it's the current player's piece
       if (piece) {
         const isWhite = piece === piece.toLowerCase();
         if ((state.currentPlayer === 'white' && isWhite) || (state.currentPlayer === 'black' && !isWhite)) {
