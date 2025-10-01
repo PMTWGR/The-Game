@@ -1,49 +1,182 @@
-<style>
-    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; background-color: #f0f0f0; box-sizing: border-box; }
-    #game { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    #board { border: 3px solid #333; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    #controls { display: flex; flex-direction: column; gap: 10px; width: 250px; }
-    #moveList { max-height: 180px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; background: white; border-radius: 4px; font-size: 13px; }
-    #educationalContent { flex-grow: 1; overflow-y: auto; border: 1px solid #ccc; padding: 8px; background: white; border-radius: 4px; font-size: 13px; min-height: 200px; }
-    .move-item { margin: 4px 0; padding: 2px; }
-    .insight { margin: 6px 0; padding: 4px; background: #f9f9f9; border-left: 3px solid #4CAF50; }
-    .valid-move { fill: rgba(76, 175, 80, 0.6); cursor: pointer; stroke: #2E7D32; stroke-width: 2; }
-    .valid-move:hover { fill: rgba(76, 175, 80, 0.8); }
-    .selected-square { fill: rgba(255, 235, 59, 0.4); }
-    button { padding: 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px; transition: background 0.3s; }
-    button:hover { background: #45a049; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    select { padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
-    #aiThinking { padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 13px; min-height: 40px; display: flex; align-items: center; }
-    .piece { cursor: pointer; transition: transform 0.1s; }
-    .piece:hover { transform: scale(1.1); }
-    .popup-image { position: absolute; width: 210px; height: 210px; z-index: 1000; pointer-events: none; display: none; border: 3px solid #333; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px; }
-  </style><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Music Industry Chess</title>
   <style>
-    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; background-color: #f0f0f0; box-sizing: border-box; }
-    #game { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    #board { border: 3px solid #333; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    #controls { display: flex; flex-direction: column; gap: 10px; width: 250px; }
-    #moveList { max-height: 180px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; background: white; border-radius: 4px; font-size: 13px; }
-    #educationalContent { flex-grow: 1; overflow-y: auto; border: 1px solid #ccc; padding: 8px; background: white; border-radius: 4px; font-size: 13px; min-height: 200px; }
-    .move-item { margin: 4px 0; padding: 2px; }
-    .insight { margin: 6px 0; padding: 4px; background: #f9f9f9; border-left: 3px solid #4CAF50; }
-    .valid-move { fill: rgba(76, 175, 80, 0.6); cursor: pointer; stroke: #2E7D32; stroke-width: 2; }
-    .valid-move:hover { fill: rgba(76, 175, 80, 0.8); }
-    .selected-square { fill: rgba(255, 235, 59, 0.4); }
-    button { padding: 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px; transition: background 0.3s; }
-    button:hover { background: #45a049; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    select { padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
-    #aiThinking { padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 13px; min-height: 40px; display: flex; align-items: center; }
-    .piece { cursor: pointer; transition: transform 0.1s; }
-    .piece:hover { transform: scale(1.1); }
-    .popup-image { position: absolute; width: 210px; height: 210px; z-index: 1000; pointer-events: none; display: none; border: 3px solid #333; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px; }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      margin: 0; 
+      padding: 20px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    #game { 
+      display: flex; 
+      gap: 20px; 
+      flex-wrap: wrap; 
+      justify-content: center;
+      max-width: 1200px;
+    }
+    #board { 
+      border: 4px solid #333; 
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      background: white;
+    }
+    #controls { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      width: 280px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    #moveList { 
+      max-height: 150px; 
+      overflow-y: auto; 
+      border: 1px solid #ddd; 
+      padding: 8px; 
+      background: #fafafa; 
+      border-radius: 4px; 
+      font-size: 13px;
+      font-family: monospace;
+    }
+    #educationalContent { 
+      flex-grow: 1; 
+      overflow-y: auto; 
+      border: 1px solid #ddd; 
+      padding: 10px; 
+      background: #fafafa; 
+      border-radius: 4px; 
+      font-size: 13px; 
+      min-height: 180px;
+      line-height: 1.5;
+    }
+    .move-item { 
+      margin: 3px 0; 
+      padding: 3px 5px;
+      background: white;
+      border-radius: 2px;
+    }
+    .insight { 
+      margin: 8px 0; 
+      padding: 8px; 
+      background: white; 
+      border-left: 4px solid #667eea;
+      border-radius: 3px;
+    }
+    .valid-move { 
+      fill: rgba(76, 175, 80, 0.7); 
+      cursor: pointer; 
+      stroke: #2E7D32; 
+      stroke-width: 2;
+    }
+    .valid-move:hover { 
+      fill: rgba(76, 175, 80, 0.9);
+      transform: scale(1.1);
+    }
+    .selected-square { 
+      fill: rgba(255, 235, 59, 0.5);
+      stroke: #FBC02D;
+      stroke-width: 3;
+    }
+    button { 
+      padding: 12px; 
+      font-size: 14px; 
+      font-weight: 600;
+      cursor: pointer; 
+      background: #667eea; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      transition: all 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button:hover { 
+      background: #5568d3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled { 
+      background: #ccc; 
+      cursor: not-allowed;
+      transform: none;
+    }
+    select { 
+      padding: 10px; 
+      font-size: 14px; 
+      border: 2px solid #ddd; 
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: border 0.3s;
+    }
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    #aiThinking { 
+      padding: 10px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 6px; 
+      font-size: 13px; 
+      min-height: 45px; 
+      display: flex; 
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      text-align: center;
+    }
+    .piece { 
+      cursor: pointer; 
+      transition: transform 0.15s ease;
+    }
+    .piece:hover { 
+      transform: scale(1.15);
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+    .popup-image { 
+      position: absolute; 
+      width: 210px; 
+      height: 210px; 
+      z-index: 1000; 
+      pointer-events: none; 
+      display: none; 
+      border: 4px solid #667eea; 
+      background: white; 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .status-bar {
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+      color: #666;
+      font-weight: 500;
+    }
+    @media (max-width: 768px) {
+      #game { flex-direction: column; align-items: center; }
+      #controls { width: 100%; max-width: 560px; }
+    }
   </style>
 </head>
 <body>
@@ -51,7 +184,7 @@
     <svg id="board" width="560" height="560">
       <defs>
         <filter id="shadow">
-          <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+          <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.4"/>
         </filter>
       </defs>
       <g id="boardSquares"></g>
@@ -61,21 +194,29 @@
       <g id="popupLayer"></g>
     </svg>
     <div id="controls">
-      <button id="newBtn">New Game</button>
+      <h3>🎵 Music Industry Chess</h3>
+      <button id="newBtn">🔄 New Game</button>
       <select id="aiPersonality">
-        <option value="major">Major Label</option>
-        <option value="tech">Tech Platform</option>
+        <option value="major">🏢 Major Label</option>
+        <option value="tech">💻 Tech Platform</option>
       </select>
+      <div class="status-bar" id="statusBar">White to move</div>
       <div id="aiThinking">AI ready</div>
-      <div id="moveList"></div>
-      <div id="educationalContent"></div>
+      <div>
+        <h3>Move History</h3>
+        <div id="moveList"></div>
+      </div>
+      <div>
+        <h3>Game Insights</h3>
+        <div id="educationalContent"></div>
+      </div>
     </div>
   </div>
   <script>
     const NS = "http://www.w3.org/2000/svg";
     const SQUARE = 70;
     const ASSET_DIR = "https://pmtwgr.github.io/The-Game/image/";
-    const V = "?v=" + Date.now();
+    const V = "?v=20250201";
 
     function spriteFor(pieceChar) {
       const isWhite = (pieceChar === pieceChar.toLowerCase());
@@ -120,9 +261,11 @@
       state.history = [];
       state.gameOver = false;
       state.firstMoveMade = false;
+      state.aiThinking = false;
       drawAll();
       pushEdu("Game started. You control White (Artists). Click a piece to select it.");
       updateAIStatus();
+      updateStatusBar();
     }
 
     function buildBoard() {
@@ -136,7 +279,7 @@
           sq.setAttribute('y', r * SQUARE);
           sq.setAttribute('width', SQUARE);
           sq.setAttribute('height', SQUARE);
-          sq.setAttribute('fill', (r + c) % 2 === 0 ? '#f0d9b5' : '#b58863');
+          sq.setAttribute('fill', (r + c) % 2 === 0 ? '#ffffff' : '#000000');
           sq.setAttribute('stroke', 'none');
           sq.setAttribute('data-row', r);
           sq.setAttribute('data-col', c);
@@ -162,6 +305,7 @@
       drawPieces();
       showValidMoves();
       updateMoveList();
+      updateStatusBar();
     }
 
     function drawHighlight() {
@@ -205,7 +349,6 @@
           
           img.addEventListener('error', function(e) {
             console.error('Failed to load image:', src);
-            this.setAttribute('href', 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="30" font-size="20">?</text></svg>');
           });
           
           img.addEventListener('click', (e) => {
@@ -496,10 +639,12 @@
       const gameEndStatus = checkGameEnd(state.currentPlayer === 'white');
       if (gameEndStatus === 'checkmate') {
         state.gameOver = true;
-        pushEdu("CHECKMATE! Game over.");
+        pushEdu("🏆 CHECKMATE! " + (state.currentPlayer === 'white' ? 'Black wins!' : 'White wins!'));
+        updateStatusBar();
       } else if (gameEndStatus === 'stalemate') {
         state.gameOver = true;
-        pushEdu("STALEMATE! Game is a draw.");
+        pushEdu("🤝 STALEMATE! Game is a draw.");
+        updateStatusBar();
       } else if (state.currentPlayer === 'black' && !state.gameOver) {
         setTimeout(makeAIMove, 600);
       }
@@ -556,7 +701,11 @@
 
     function updateMoveList() {
       const box = document.getElementById('moveList');
-      box.innerHTML = '<div style="font-weight:bold; margin-bottom:4px;">Move History:</div>';
+      if (state.history.length === 0) {
+        box.innerHTML = '<div style="color:#999;font-style:italic;">No moves yet</div>';
+        return;
+      }
+      box.innerHTML = '';
       state.history.forEach((mv, i) => {
         const el = document.createElement('div');
         el.className = 'move-item';
@@ -564,6 +713,17 @@
         box.appendChild(el);
       });
       box.scrollTop = box.scrollHeight;
+    }
+
+    function updateStatusBar() {
+      const bar = document.getElementById('statusBar');
+      if (state.gameOver) {
+        bar.textContent = 'Game Over';
+        bar.style.background = '#ffcdd2';
+      } else {
+        bar.textContent = state.currentPlayer === 'white' ? '⚪ White to move' : '⚫ Black to move';
+        bar.style.background = '#f0f0f0';
+      }
     }
 
     function updateAIStatus() {
@@ -628,7 +788,7 @@
       if (state.aiThinking || state.gameOver || state.currentPlayer !== 'black') return;
       
       state.aiThinking = true;
-      setThinking("AI analyzing...");
+      setThinking("🤔 AI analyzing...");
 
       const persona = aiPersonalities[document.getElementById('aiPersonality').value];
       const legalMoves = getAllLegalMoves(state.board, false, state.enPassantTarget, state.castlingRights);
@@ -674,7 +834,7 @@
       setupPieces();
       drawAll();
       updateAIStatus();
-      pushEdu("New game started. You control White (Artists). Click a piece to select it.");
+      pushEdu("🎮 New game started. You control White (Artists). Click a piece to select it.");
     }
 
     function pushEdu(msg) {
