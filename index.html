@@ -636,4 +636,32 @@
 
     function resetGame() {
       state.history = [];
-      state.currentPlayer =
+      state.currentPlayer = 'white';
+      state.gameOver = false;
+      state.firstMoveMade = false;
+      state.selected = null;
+      state.validMoves = [];
+      state.aiThinking = false;
+      state.castlingRights = { white: { kingside: true, queenside: true }, black: { kingside: true, queenside: true } };
+      state.enPassantTarget = null;
+      document.getElementById('aiPersonality').disabled = false;
+      buildBoard();
+      setupPieces();
+      drawAll();
+      updateAIStatus();
+      pushEdu("New game started. You control White (Artists). Click a piece to select it.");
+    }
+
+    function pushEdu(msg) {
+      const wrap = document.getElementById('educationalContent');
+      const d = document.createElement('div');
+      d.className = 'insight';
+      d.innerHTML = `<p>${msg}</p>`;
+      const olds = wrap.querySelectorAll('.insight');
+      if (olds.length >= 5) olds[0].remove();
+      wrap.appendChild(d);
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+  </script>
+</body>
+</html>
