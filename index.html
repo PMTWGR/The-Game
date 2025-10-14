@@ -186,10 +186,10 @@
             }, { once: true });
             img.addEventListener('mouseover', () => {
               const popup = document.createElementNS(NS, 'image');
-              const type = p.toLowerCase();
-              const blackSrc = spriteFor(type, true);
-              popup.setAttributeNS('http://www.w3.org/1999/xlink', 'href', blackSrc);
-              popup.setAttribute('href', blackSrc);
+              const isWhite = p === p.toLowerCase();
+              const popupSrc = spriteFor(p); // Use the same sprite as the original piece
+              popup.setAttributeNS('http://www.w3.org/1999/xlink', 'href', popupSrc);
+              popup.setAttribute('href', popupSrc);
               popup.setAttribute('class', 'popup-image');
               popup.setAttribute('x', c * SQUARE - 70);
               popup.setAttribute('y', r * SQUARE - 215);
