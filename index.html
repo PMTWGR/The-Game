@@ -10,18 +10,69 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      height: 100vh; 
-      margin: 2px; 
+      min-height: 100vh; 
+      margin: 0; 
+      padding: 10px;
       background-color: #f0f0f0; 
+      box-sizing: border-box;
     }
-    #game { display: flex; gap: 10px; }
-    #board { border: 2px solid #333; height: 560px; position: relative; }
-    #controls { display: flex; flex-direction: column; gap: 5px; height: 560px; }
-    #educationalContent { flex-grow: 1; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin: 2px 0; line-height: 1.2; }
-    .insight { margin: 2px 0; }
+    #game { 
+      display: flex; 
+      gap: 10px; 
+      width: 100%;
+      max-width: 1200px;
+      flex-direction: column;
+    }
+    #board-container {
+      width: 100%;
+      aspect-ratio: 1/1;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    #board { 
+      border: 2px solid #333; 
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #controls { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+      margin-top: 10px;
+      width: 100%;
+      max-width: 560px;
+      margin: 10px auto 0 auto;
+    }
+    #educationalContent { 
+      flex-grow: 1; 
+      overflow-y: auto; 
+      border: 1px solid #ccc; 
+      padding: 8px; 
+      margin: 2px 0; 
+      line-height: 1.3;
+      min-height: 80px;
+      max-height: 150px;
+    }
+    .insight { margin: 4px 0; }
     .valid-move { fill: rgba(0, 255, 0, 0.5); cursor: pointer; }
-    button { padding: 5px; font-size: 14px; cursor: pointer; margin: 2px 0; }
-    select { padding: 3px; font-size: 14px; margin: 2px 0; }
+    button { 
+      padding: 8px 12px; 
+      font-size: 16px; 
+      cursor: pointer; 
+      margin: 2px 0; 
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #fff;
+    }
+    select { 
+      padding: 8px 12px; 
+      font-size: 16px; 
+      margin: 2px 0; 
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #fff;
+    }
     image { pointer-events: auto; }
     #imageErrors { display: none; }
     .whiteAuto { filter: invert(1) grayscale(0.7) brightness(1.1) contrast(2.0) drop-shadow(0 0 2px #000); }
@@ -36,16 +87,30 @@
       border: 2px solid #333;
       opacity: 0.7;
     }
+    
+    @media (min-width: 768px) {
+      #game {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      #controls {
+        margin-top: 0;
+        margin-left: 10px;
+        min-width: 200px;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="game">
-    <svg id="board" width="560" height="560">
-      <g id="boardSquares"></g>
-      <g id="pieces"></g>
-      <g id="popupLayer"></g>
-      <g id="validMoves"></g>
-    </svg>
+    <div id="board-container">
+      <svg id="board" viewBox="0 0 560 560">
+        <g id="boardSquares"></g>
+        <g id="pieces"></g>
+        <g id="popupLayer"></g>
+        <g id="validMoves"></g>
+      </svg>
+    </div>
     <div id="controls">
       <button id="newBtn">New Game</button>
       <button id="undoBtn">Undo Move</button>
@@ -61,7 +126,7 @@
   </div>
   <script>
     const NS = "http://www.w3.org/2000/svg";
-    const SQUARE = 70;
+    const BASE_SQUARE = 70;
     const ASSET_DIR = "https://pmtwgr.github.io/The-Game/image/";
     const V = "?v=11";
     const DEBUG = true;
@@ -117,10 +182,10 @@
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const sq = document.createElementNS(NS, 'rect');
-          sq.setAttribute('x', c * SQUARE);
-          sq.setAttribute('y', r * SQUARE);
-          sq.setAttribute('width', SQUARE);
-          sq.setAttribute('height', SQUARE);
+          sq.setAttribute('x', c * BASE_SQUARE);
+          sq.setAttribute('y', r * BASE_SQUARE);
+          sq.setAttribute('width', BASE_SQUARE);
+          sq.setAttribute('height', BASE_SQUARE);
           sq.setAttribute('fill', (r + c) % 2 === 0 ? '#fff' : '#eee');
           sq.setAttribute('stroke', '#000');
           sq.addEventListener('click', (e) => {
@@ -167,10 +232,10 @@
           const src = spriteFor(p);
           img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
           img.setAttribute('href', src);
-          img.setAttribute('x', c * SQUARE + 5);
-          img.setAttribute('y', r * SQUARE + 5);
-          img.setAttribute('width', SQUARE - 10);
-          img.setAttribute('height', SQUARE - 10);
+          img.setAttribute('x', c * BASE_SQUARE + 5);
+          img.setAttribute('y', r * BASE_SQUARE + 5);
+          img.setAttribute('width', BASE_SQUARE - 10);
+          img.setAttribute('height', BASE_SQUARE - 10);
           if (p === p.toLowerCase()) {
             img.addEventListener('error', () => {
               errorDiv.innerHTML += `<p>Error loading image for ${p} at ${squareToAlgebraic(r, c)}: ${src}</p>`;
@@ -186,8 +251,8 @@
               popup.setAttributeNS('http://www.w3.org/1999/xlink', 'href', popupSrc);
               popup.setAttribute('href', popupSrc);
               popup.setAttribute('class', 'popup-image');
-              popup.setAttribute('x', c * SQUARE - 70);
-              popup.setAttribute('y', r * SQUARE - 215);
+              popup.setAttribute('x', c * BASE_SQUARE - 70);
+              popup.setAttribute('y', r * BASE_SQUARE - 215);
               popup.setAttribute('width', 210);
               popup.setAttribute('height', 210);
               popup.style.display = 'inline';
@@ -244,8 +309,8 @@
       g.innerHTML = '';
       for (const m of state.validMoves) {
         const dot = document.createElementNS(NS, 'circle');
-        dot.setAttribute('cx', m.to[1] * SQUARE + SQUARE / 2);
-        dot.setAttribute('cy', m.to[0] * SQUARE + SQUARE / 2);
+        dot.setAttribute('cx', m.to[1] * BASE_SQUARE + BASE_SQUARE / 2);
+        dot.setAttribute('cy', m.to[0] * BASE_SQUARE + BASE_SQUARE / 2);
         dot.setAttribute('r', 12);
         dot.setAttribute('class', 'valid-move');
         dot.addEventListener('click', () => {
