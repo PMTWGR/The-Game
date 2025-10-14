@@ -17,9 +17,7 @@
     #game { display: flex; gap: 10px; }
     #board { border: 2px solid #333; height: 560px; position: relative; }
     #controls { display: flex; flex-direction: column; gap: 5px; height: 560px; }
-    #moveList { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin: 2px 0; line-height: 1.2; }
     #educationalContent { flex-grow: 1; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin: 2px 0; line-height: 1.2; }
-    .move-item { margin: 2px 0; }
     .insight { margin: 2px 0; }
     .valid-move { fill: rgba(0, 255, 0, 0.5); cursor: pointer; }
     button { padding: 5px; font-size: 14px; cursor: pointer; margin: 2px 0; }
@@ -57,7 +55,6 @@
         <option value="tech">Tech Platform</option>
       </select>
       <div id="aiThinking"></div>
-      <div id="moveList"></div>
       <div id="educationalContent"></div>
       <div id="imageErrors"></div>
     </div>
@@ -83,7 +80,6 @@
       currentPlayer: 'white',
       selected: null,
       validMoves: [],
-      history: [],
       aiThinking: false,
       gameOver: false,
       firstMoveMade: false
@@ -155,7 +151,6 @@
     function drawAll() {
       drawPieces();
       showValid();
-      updateMoveList();
     }
 
     function drawPieces() {
@@ -187,7 +182,7 @@
             img.addEventListener('mouseover', () => {
               const popup = document.createElementNS(NS, 'image');
               const isWhite = p === p.toLowerCase();
-              const popupSrc = spriteFor(p); // Use the same sprite as the original piece
+              const popupSrc = spriteFor(p);
               popup.setAttributeNS('http://www.w3.org/1999/xlink', 'href', popupSrc);
               popup.setAttribute('href', popupSrc);
               popup.setAttribute('class', 'popup-image');
@@ -331,10 +326,6 @@
       state.board[tr][tc] = piece;
       state.board[fr][fc] = null;
 
-      const alg = `${String.fromCharCode(97 + fc)}${8 - fr}-${String.fromCharCode(97 + tc)}${8 - tr}`;
-      state.history.push(alg);
-      updateMoveList();
-
       if (!state.firstMoveMade) {
         state.firstMoveMade = true;
         document.getElementById('aiPersonality').disabled = true;
@@ -404,18 +395,6 @@
         k: "Government setting rules."
       })[p.toLowerCase()] || "Move played.";
       return msg;
-    }
-
-    function updateMoveList() {
-      const box = document.getElementById('moveList');
-      box.innerHTML = '';
-      state.history.forEach((mv, i) => {
-        const el = document.createElement('div');
-        el.className = 'move-item';
-        el.textContent = `${i + 1}. ${mv}`;
-        box.appendChild(el);
-      });
-      box.scrollTop = box.scrollHeight;
     }
 
     function setThinking(msg) {
@@ -521,7 +500,6 @@
     }
 
     function resetGame() {
-      state.history = [];
       state.currentPlayer = 'white';
       state.gameOver = false;
       state.firstMoveMade = false;
