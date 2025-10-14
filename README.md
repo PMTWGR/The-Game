@@ -1,4 +1,3 @@
-Miles, [30/09/2025 23:14]
 Music Industry Chess
 
 An educational, black-and-white chess experience that maps the music industry onto the chessboard.
@@ -113,7 +112,6 @@ A short post-game survey (3–6 Qs) to measure clarity/impact:
  • “What confused you?” (free text)
  • “What clicked?” (free text)
 
-Miles, [30/09/2025 23:14]
 Hook this up to a simple Google Form or Airtable form; export CSV for analysis.
 
 ⸻
