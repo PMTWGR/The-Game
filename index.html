@@ -122,6 +122,16 @@
       <div id="aiThinking"></div>
       <div id="educationalContent"></div>
       <div id="imageErrors"></div>
+            <!-- COMMENT FORM -->
+      <div id="reflectionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid #333; z-index: 1000;">
+          <h3>What did this reveal to you?</h3>
+          <p>Your play style: <strong id="playStyleDisplay"></strong></p>
+          <textarea id="userInsight" placeholder="Share your insight with the community..." rows="4" cols="40"></textarea><br>
+          <input type="text" id="username" placeholder="Username (optional)"><br>
+          <label><input type="checkbox" id="publicInsight" checked> Share to community dashboard</label><br>
+          <button onclick="submitInsight()">Share Insight</button>
+          <button onclick="skipToWaitlist()">Skip</button>
+      </div>
     </div>
   </div>
   <script>
@@ -589,6 +599,64 @@
       if (olds.length >= 3) olds[0].remove();
       wrap.appendChild(d);
       wrap.scrollTop = wrap.scrollHeight;
+    }
+        // ===== AIRTABLE COMMENT SYSTEM =====
+    const AIRTABLE_CONFIG = {
+        BASE_ID: 'appHesCUB8Nu1xVK1',
+        TABLE_NAME: 'CommunityInsights',
+        API_KEY: 'PLACE HOLDER KEY'
+    };
+
+    async function saveInsightToAirtable(username, insight, playstyle) {
+        const insightData = {
+            records: [{
+                fields: {
+                    Username: username,
+                    Insight: insight,
+                    Playstyle: playstyle,
+                    Public: document.getElementById('publicInsight').checked,
+                    GameData: JSON.stringify({test: "data"})
+                }
+            }]
+        };
+        
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(insightData)
+            });
+            return response.ok;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function showReflectionModal() {
+        document.getElementById('playStyleDisplay').textContent = "Sovereign Builder";
+        document.getElementById('reflectionModal').style.display = 'block';
+    }
+
+    async function submitInsight() {
+        const username = document.getElementById('username').value || 'Anonymous Strategist';
+        const insight = document.getElementById('userInsight').value;
+        const playstyle = document.getElementById('playStyleDisplay').textContent;
+        
+        const success = await saveInsightToAirtable(username, insight, playstyle);
+        
+        if (success) {
+            alert('Thank you for sharing!');
+            document.getElementById('reflectionModal').style.display = 'none';
+        } else {
+            alert('Failed to save insight.');
+        }
+    }
+
+    function skipToWaitlist() {
+        document.getElementById('reflectionModal').style.display = 'none';
     }
   </script>
 </body>
