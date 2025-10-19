@@ -47,12 +47,13 @@
     #educationalContent { 
       flex-grow: 1; 
       overflow-y: auto; 
-      border: 1px solid #ccc; 
+      border: 1px solid #333; 
       padding: 8px; 
       margin: 2px 0; 
       line-height: 1.3;
       min-height: 80px;
       max-height: 150px;
+      background: white;
     }
     .insight { margin: 4px 0; }
     .valid-move { fill: rgba(0, 255, 0, 0.5); cursor: pointer; }
@@ -61,16 +62,17 @@
       font-size: 16px; 
       cursor: pointer; 
       margin: 2px 0; 
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid #333;
+      border-radius: 0px;
       background-color: #fff;
+      color: #000;
     }
     select { 
       padding: 8px 12px; 
       font-size: 16px; 
       margin: 2px 0; 
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid #333;
+      border-radius: 0px;
       background-color: #fff;
     }
     image { pointer-events: auto; }
@@ -86,6 +88,60 @@
       display: none;
       border: 2px solid #333;
       opacity: 0.7;
+    }
+    
+    /* Comment Section Styles */
+    #commentSection {
+      border: 1px solid #333;
+      padding: 15px;
+      background: white;
+      margin-top: 10px;
+    }
+    #commentSection h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #000;
+    }
+    #commentForm {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #commentForm input,
+    #commentForm textarea {
+      padding: 8px;
+      border: 1px solid #333;
+      background: white;
+      color: #000;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+    #commentForm textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    #commentForm button {
+      align-self: flex-start;
+    }
+    .comment {
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+      margin: 8px 0;
+    }
+    .comment:last-child {
+      border-bottom: none;
+    }
+    .comment-username {
+      font-weight: bold;
+      color: #000;
+    }
+    .comment-text {
+      color: #333;
+      margin: 4px 0;
+    }
+    .comment-meta {
+      font-size: 12px;
+      color: #666;
     }
     
     @media (min-width: 768px) {
@@ -122,24 +178,37 @@
       <div id="aiThinking"></div>
       <div id="educationalContent"></div>
       <div id="imageErrors"></div>
-            <!-- COMMENT FORM -->
-      <div id="reflectionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid #333; z-index: 1000;">
-          <h3>What did this reveal to you?</h3>
-          <p>Your play style: <strong id="playStyleDisplay"></strong></p>
-          <textarea id="userInsight" placeholder="Share your insight with the community..." rows="4" cols="40"></textarea><br>
-          <input type="text" id="username" placeholder="Username (optional)"><br>
-          <label><input type="checkbox" id="publicInsight" checked> Share to community dashboard</label><br>
-          <button onclick="submitInsight()">Share Insight</button>
-          <button onclick="skipToWaitlist()">Skip</button>
+      
+      <!-- Comment Section -->
+      <div id="commentSection">
+        <h3>Community Insights</h3>
+        <div id="commentForm">
+          <input type="text" id="commentUsername" placeholder="Username (optional)" maxlength="20">
+          <textarea id="commentText" placeholder="What does this game reveal to you about the music industry?"></textarea>
+          <label style="font-size: 12px;">
+            <input type="checkbox" id="commentPublic" checked> 
+            Share publicly
+          </label>
+          <button onclick="submitComment()">Share Insight</button>
+        </div>
+        <div id="commentsList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
       </div>
     </div>
   </div>
+
   <script>
     const NS = "http://www.w3.org/2000/svg";
     const BASE_SQUARE = 70;
     const ASSET_DIR = "https://pmtwgr.github.io/The-Game/image/";
     const V = "?v=11";
     const DEBUG = true;
+
+    // Airtable Configuration
+    const AIRTABLE_CONFIG = {
+        BASE_ID: 'appHesCUB8Nu1xVK1',
+        TABLE_NAME: 'CommunityInsights',
+        API_KEY: 'YOUR_API_KEY_HERE'  // ← Replace with your real key locally
+    };
 
     function spriteFor(pieceChar, isBlack = false) {
       const isWhite = (pieceChar === pieceChar.toLowerCase());
@@ -174,6 +243,7 @@
         setThinking(`${persona.name}: ${persona.style}. Focus: ${persona.focus}.`);
       });
       init();
+      loadComments(); // Load existing comments on startup
     });
 
     function init() {
@@ -245,7 +315,7 @@
           img.setAttribute('x', c * BASE_SQUARE + 5);
           img.setAttribute('y', r * BASE_SQUARE + 5);
           img.setAttribute('width', BASE_SQUARE - 10);
-          img.setAttribute('height', BASE_SQUARE - 10);
+          img.setAttribute('height', SQUARE - 10);
           if (p === p.toLowerCase()) {
             img.addEventListener('error', () => {
               errorDiv.innerHTML += `<p>Error loading image for ${p} at ${squareToAlgebraic(r, c)}: ${src}</p>`;
@@ -417,9 +487,13 @@
       if (captured && captured.toLowerCase() === 'k') {
         state.gameOver = true;
         document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>GAME OVER</p></div>';
+        // Show reflection modal on game end
+        showReflectionModal();
       } else if (isCheckmate(state.currentPlayer)) {
         state.gameOver = true;
         document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>CHECK MATE</p></div>';
+        // Show reflection modal on game end
+        showReflectionModal();
       } else if (state.currentPlayer === 'black' && !state.gameOver) {
         setTimeout(makeAIMove, 600);
       }
@@ -600,64 +674,108 @@
       wrap.appendChild(d);
       wrap.scrollTop = wrap.scrollHeight;
     }
-        // ===== AIRTABLE COMMENT SYSTEM =====
-    const AIRTABLE_CONFIG = {
-        BASE_ID: 'appHesCUB8Nu1xVK1',
-        TABLE_NAME: 'CommunityInsights',
-        API_KEY: 'PLACE HOLDER KEY'
-    };
 
-    async function saveInsightToAirtable(username, insight, playstyle) {
-        const insightData = {
-            records: [{
-                fields: {
-                    Username: username,
-                    Insight: insight,
-                    Playstyle: playstyle,
-                    Public: document.getElementById('publicInsight').checked,
-                    GameData: JSON.stringify({test: "data"})
-                }
-            }]
-        };
+    // ===== COMMENT SYSTEM FUNCTIONS =====
+
+    async function submitComment() {
+      const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
+      const commentText = document.getElementById('commentText').value;
+      
+      if (!commentText.trim()) {
+        alert('Please enter your insight before sharing.');
+        return;
+      }
+
+      const success = await saveCommentToAirtable(username, commentText);
+      
+      if (success) {
+        // Clear the form
+        document.getElementById('commentText').value = '';
+        // Reload comments to show the new one
+        loadComments();
+        // Optional: Show success message
+        pushEdu('Thank you for sharing your insight!');
+      } else {
+        alert('Failed to save comment. Please try again.');
+      }
+    }
+
+    async function saveCommentToAirtable(username, comment) {
+      const commentData = {
+        records: [{
+          fields: {
+            Username: username,
+            Insight: comment,
+            Playstyle: "Community Insight",
+            Public: document.getElementById('commentPublic').checked,
+            GameData: JSON.stringify({type: "live_comment", timestamp: new Date().toISOString()})
+          }
+        }]
+      };
+      
+      try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(commentData)
+        });
+        return response.ok;
+      } catch (error) {
+        console.log('Airtable save failed:', error);
+        return false;
+      }
+    }
+
+    async function loadComments() {
+      try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}?filterByFormula={Public}=1&sort[0][field]=Timestamp&sort[0][direction]=desc&maxRecords=10`);
         
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(insightData)
-            });
-            return response.ok;
-        } catch (error) {
-            return false;
+        if (response.ok) {
+          const data = await response.json();
+          displayComments(data.records);
         }
+      } catch (error) {
+        console.log('Failed to load comments:', error);
+      }
+    }
+
+    function displayComments(comments) {
+      const commentsList = document.getElementById('commentsList');
+      
+      if (!comments || comments.length === 0) {
+        commentsList.innerHTML = '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">No insights yet. Be the first to share!</p>';
+        return;
+      }
+
+      const html = comments.map(comment => `
+        <div class="comment">
+          <div class="comment-username">${comment.fields.Username}</div>
+          <div class="comment-text">${comment.fields.Insight}</div>
+          <div class="comment-meta">${formatDate(comment.fields.Timestamp)}</div>
+        </div>
+      `).join('');
+
+      commentsList.innerHTML = html;
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
 
     function showReflectionModal() {
-        document.getElementById('playStyleDisplay').textContent = "Sovereign Builder";
-        document.getElementById('reflectionModal').style.display = 'block';
+      // Optional: You can keep this for post-game reflections
+      // or remove it since we now have the always-visible comment section
+      setTimeout(() => {
+        pushEdu("Game ended. Share your insights in the comment section below!");
+      }, 1000);
     }
 
-    async function submitInsight() {
-        const username = document.getElementById('username').value || 'Anonymous Strategist';
-        const insight = document.getElementById('userInsight').value;
-        const playstyle = document.getElementById('playStyleDisplay').textContent;
-        
-        const success = await saveInsightToAirtable(username, insight, playstyle);
-        
-        if (success) {
-            alert('Thank you for sharing!');
-            document.getElementById('reflectionModal').style.display = 'none';
-        } else {
-            alert('Failed to save insight.');
-        }
-    }
-
-    function skipToWaitlist() {
-        document.getElementById('reflectionModal').style.display = 'none';
-    }
+    // Load comments when page loads
+    loadComments();
   </script>
 </body>
 </html>
