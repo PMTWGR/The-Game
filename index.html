@@ -203,11 +203,11 @@
     const V = "?v=11";
     const DEBUG = true;
 
-    // Airtable Configuration
+    // Airtable Configuration - REPLACE WITH YOUR REAL KEY LOCALLY
     const AIRTABLE_CONFIG = {
         BASE_ID: 'appHesCUB8Nu1xVK1',
         TABLE_NAME: 'CommunityInsights',
-        API_KEY: 'YOUR_API_KEY_HERE'  // ← Replace with your real key locally
+        API_KEY: 'YOUR_API_KEY_HERE'
     };
 
     function spriteFor(pieceChar, isBlack = false) {
@@ -315,7 +315,7 @@
           img.setAttribute('x', c * BASE_SQUARE + 5);
           img.setAttribute('y', r * BASE_SQUARE + 5);
           img.setAttribute('width', BASE_SQUARE - 10);
-          img.setAttribute('height', SQUARE - 10);
+          img.setAttribute('height', BASE_SQUARE - 10); // FIXED: was SQUARE, now BASE_SQUARE
           if (p === p.toLowerCase()) {
             img.addEventListener('error', () => {
               errorDiv.innerHTML += `<p>Error loading image for ${p} at ${squareToAlgebraic(r, c)}: ${src}</p>`;
@@ -487,12 +487,10 @@
       if (captured && captured.toLowerCase() === 'k') {
         state.gameOver = true;
         document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>GAME OVER</p></div>';
-        // Show reflection modal on game end
         showReflectionModal();
       } else if (isCheckmate(state.currentPlayer)) {
         state.gameOver = true;
         document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>CHECK MATE</p></div>';
-        // Show reflection modal on game end
         showReflectionModal();
       } else if (state.currentPlayer === 'black' && !state.gameOver) {
         setTimeout(makeAIMove, 600);
@@ -693,10 +691,10 @@
         document.getElementById('commentText').value = '';
         // Reload comments to show the new one
         loadComments();
-        // Optional: Show success message
+        // Show success message
         pushEdu('Thank you for sharing your insight!');
       } else {
-        alert('Failed to save comment. Please try again.');
+        alert('Failed to save comment. Please check your API key and try again.');
       }
     }
 
@@ -722,7 +720,14 @@
           },
           body: JSON.stringify(commentData)
         });
-        return response.ok;
+        
+        if (response.ok) {
+          return true;
+        } else {
+          const error = await response.json();
+          console.log('Airtable error:', error);
+          return false;
+        }
       } catch (error) {
         console.log('Airtable save failed:', error);
         return false;
@@ -736,6 +741,8 @@
         if (response.ok) {
           const data = await response.json();
           displayComments(data.records);
+        } else {
+          console.log('Failed to load comments');
         }
       } catch (error) {
         console.log('Failed to load comments:', error);
@@ -767,8 +774,6 @@
     }
 
     function showReflectionModal() {
-      // Optional: You can keep this for post-game reflections
-      // or remove it since we now have the always-visible comment section
       setTimeout(() => {
         pushEdu("Game ended. Share your insights in the comment section below!");
       }, 1000);
