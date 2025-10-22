@@ -724,6 +724,8 @@ async function loadComments() {
   }
 }
 
+setInterval(loadComments, 15000); // Refresh comments every 15s
+
 
 function displayComments(comments) {
   const container = document.getElementById('commentsList');
