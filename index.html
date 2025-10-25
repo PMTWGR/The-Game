@@ -698,9 +698,7 @@
   try {
     const res = await fetch("https://pmtwgr.app.n8n.cloud/webhook/submit-comment", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
