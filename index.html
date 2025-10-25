@@ -693,13 +693,18 @@
   };
 
   try {
-    const res = await fetch("https://eof9pddhyox83xd.m.pipedream.net", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    const res = await fetch("https://pmtwgr.app.n8n.cloud/webhook/submit-comment", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    Username: "TestUser",
+    Insight: "Game's sick!",
+    Playstyle: "Sovereign Builder",
+    Public: true,
+    Timestamp: new Date().toISOString()
+  })
+});
+
 
     if (!res.ok) throw new Error("Submission failed");
 
