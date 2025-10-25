@@ -675,7 +675,7 @@
 
     // ===== COMMENT SYSTEM FUNCTIONS =====
 
-  async function submitComment() {
+ async function submitComment() {
   const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
   const commentText = document.getElementById('commentText').value;
 
@@ -685,35 +685,33 @@
   }
 
   const isPublic = document.getElementById('commentPublic').checked;
+  const playstyle = document.getElementById('playstyle').value;
 
   const payload = {
     Username: username,
     Insight: commentText,
-    Public: isPublic
+    Playstyle: playstyle,
+    Public: isPublic,
+    Timestamp: new Date().toISOString()
   };
 
   try {
     const res = await fetch("https://pmtwgr.app.n8n.cloud/webhook/submit-comment", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    Username: "TestUser",
-    Insight: "Game's sick!",
-    Playstyle: "Sovereign Builder",
-    Public: true,
-    Timestamp: new Date().toISOString()
-  })
-});
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
-
-    if (!res.ok) throw new Error("Submission failed");
-
-    document.getElementById('commentText').value = '';
-    loadComments(); // refresh
-    pushEdu('Thank you for sharing your insight!');
+    if (res.ok) {
+      alert("Comment submitted successfully!");
+    } else {
+      alert("Failed to submit comment.");
+    }
   } catch (err) {
+    console.error("Error submitting comment:", err);
     alert("Failed to submit comment.");
-    console.error(err);
   }
 }
 
