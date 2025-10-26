@@ -675,7 +675,7 @@
 
     // ===== COMMENT SYSTEM FUNCTIONS =====
 
- async function submitComment() {
+async function submitComment() {
   const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
   const commentText = document.getElementById('commentText').value;
 
@@ -685,14 +685,15 @@
   }
 
   const isPublic = document.getElementById('commentPublic').checked;
-const playstyle = document.getElementById('aiPersonality').value;
+  const playstyle = document.getElementById('aiPersonality').value;
 
   const payload = {
     Username: username,
     Insight: commentText,
     Playstyle: playstyle,
     Public: isPublic,
-    Timestamp: new Date().toISOString()
+    Timestamp: new Date().toISOString(),
+    GameData: JSON.stringify(state.board) // <-- add this line
   };
 
   try {
@@ -704,6 +705,12 @@ const playstyle = document.getElementById('aiPersonality').value;
 
     if (res.ok) {
       alert("Comment submitted successfully!");
+      // ✅ Clear form fields
+      document.getElementById('commentUsername').value = '';
+      document.getElementById('commentText').value = '';
+      document.getElementById('commentPublic').checked = true;
+
+      loadComments(); // Refresh comments immediately
     } else {
       alert("Failed to submit comment.");
     }
@@ -712,6 +719,7 @@ const playstyle = document.getElementById('aiPersonality').value;
     alert("Failed to submit comment.");
   }
 }
+
 
 async function loadComments() {
   try {
