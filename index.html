@@ -715,7 +715,7 @@
 
 async function loadComments() {
   try {
-    const response = await fetch("https://eot6xk0ora4yj7.m.pipedream.net"); // <-- your GET endpoint
+    const response = await fetch("https://pmtwgr.app.n8n.cloud/webhook/get-comments"); // <-- your GET endpoint
     if (!response.ok) throw new Error("Failed to fetch comments");
 
     const comments = await response.json();
