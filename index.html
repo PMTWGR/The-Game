@@ -688,16 +688,14 @@ async function submitComment() {
   const playstyle = document.getElementById('aiPersonality').value;
 
   const payload = {
-    Username: username,
-    Insight: commentText,
-    Playstyle: playstyle,
-    Public: isPublic,
-    Timestamp: new Date().toISOString(),
-    GameData: JSON.stringify(state.board) // <-- add this line
+    username: username,
+    insight: commentText,
+    playstyle: playstyle,
+    public: isPublic
   };
 
   try {
-    const res = await fetch("https://pmtwgr.app.n8n.cloud/webhook/submit-comment"), {
+    const res = await fetch("https://hook.eu1.make.com/YOUR_SUBMIT_WEBHOOK_ID", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -705,12 +703,10 @@ async function submitComment() {
 
     if (res.ok) {
       alert("Comment submitted successfully!");
-      // ✅ Clear form fields
       document.getElementById('commentUsername').value = '';
       document.getElementById('commentText').value = '';
       document.getElementById('commentPublic').checked = true;
-
-      loadComments(); // Refresh comments immediately
+      loadComments();
     } else {
       alert("Failed to submit comment.");
     }
@@ -720,7 +716,7 @@ async function submitComment() {
   }
 }
 
-
+    
 async function loadComments() {
   try {
     const response = await fetch("https://hook.eu1.make.com/nlx62ytqm43r2cer5xgkqeqlp444q9w2");
