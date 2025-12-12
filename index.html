@@ -676,93 +676,100 @@
     // ===== COMMENT SYSTEM FUNCTIONS =====
 
 async function submitComment() {
-  const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
-  const commentText = document.getElementById('commentText').value;
-  
-  if (!commentText.trim()) {
-    alert('Please enter your insight before sharing.');
+  const username = document.getElementById('commentUsername').value.trim() || 'Anonymous Strategist';
+  const insight = document.getElementById('commentText').value.trim();
+
+  if (!insight) {
+    alert('Please write something before sharing!');
+  else if (insight.length > 1000) {
+    alert('Insight too long! Max 1000 characters.');
     return;
-  }
-  
-  const isPublic = document.getElementById('commentPublic').checked;
-  const playstyle = document.getElementById('aiPersonality').value;
-  
-  const payload = {
-    username: username,
-    insight: commentText,
-    playstyle: playstyle,
-    public: isPublic
-  };
-  
-  try {
-    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    
-    if (res.ok) {
-      alert("Comment submitted successfully!");
-      document.getElementById('commentUsername').value = '';
-      document.getElementById('commentText').value = '';
-      document.getElementById('commentPublic').checked = true;
-      loadComments();
-    } else {
-      alert("Failed to submit comment.");
+  } else {
+    const playstyle = document.getElementById('aiPersonality').value === 'major' ? 'Major Label' : 'Tech Platform';
+    const isPublic = document.getElementById('commentPublic').checked;
+
+    const payload = {
+      fields: {
+        Username: username,
+        Insight: insight,
+        Playstyle: playstyle,
+        Public: isPublic
+        // Airtable auto-fills Timestamp
+      }
+    };
+
+    try {
+      const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert("Insight shared successfully!");
+        document.getElementById('commentUsername').value = '';
+        document.getElementById('commentText').value = '';
+        loadComments(); // Refresh instantly
+      } else {
+        throw new Error("Server responded with " + res.status);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to share insight. Check console (F12) or try again.");
     }
-  } catch (err) {
-    console.error("Error submitting comment:", err);
-    alert("Failed to submit comment.");
   }
 }
-    
+
 async function loadComments() {
   try {
-    const response = await fetch("https://hook.eu1.make.com/nlx62ytqm43r2cer5xgkqeqlp444q9w2");
-    if (!response.ok) throw new Error("Failed to fetch comments");
-    
-    const data = await response.json();
-    displayComments(data.comments || []); // Extract the comments array
-  } catch (error) {
-    console.error("Error loading comments:", error);
-    displayComments([]); // Show empty if error
+    const res = await fetch("https://hook.eu1.make.com/nlx62ytqm43r2cer5xgkqeqlp444q9w2");
+    if (!res.ok) throw new Error("Failed to load comments");
+    const data = await res.json();
+
+    // The webhook returns: { comments: [array] }
+    const comments = Array.isArray(data.comments) ? data.comments : [];
+
+    const container = document.getElementById('commentsList');
+    if (comments.length === 0) {
+      container.innerHTML = "<p style='color:#666; font-style:italic;'>No insights yet — be the first!</p>";
+      return;
+    }
+
+    const html = comments.map(c => `
+      <div class="comment">
+        <div class="comment-username">${escapeHtml(c.Username || "Anonymous")}</div>
+        <div class="comment-text">${escapeHtml(c.Insight || "")}</div>
+        <div class="comment-meta">
+          ${c.Playstyle || 'Unknown'} • ${formatDate(c.Timestamp)}
+        </div>
+      </div>
+    `).join("");
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error("Load comments error:", err);
+    document.getElementById('commentsList').innerHTML = "<p style='color:red;'>Could not load comments</p>";
   }
 }
 
-setInterval(loadComments, 15000); // Refresh comments every 15s
-
-
-function displayComments(comments) {
-  const container = document.getElementById('commentsList');
-  if (!Array.isArray(comments)) {
-    container.innerHTML = "<p>No comments yet.</p>";
-    return;
-  }
-
-  const html = comments.map(c => `
-    <div class="comment">
-      <div class="comment-username">${c.Username || "Anonymous"}</div>
-      <div class="comment-text">${c.Insight}</div>
-    </div>
-  `).join("");
-
-  container.innerHTML = html;
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
+function formatDate(isoString) {
+  if (!isoString) return 'Just now';
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+         date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
 
-    function formatDate(timestamp) {
-      const date = new Date(timestamp);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
-
-    function showReflectionModal() {
-      setTimeout(() => {
-        pushEdu("Game ended. Share your insights in the comment section below!");
-      }, 1000);
-    }
-
-    // Load comments when page loads
-    loadComments();
-  </script>
+// Load comments on page load + refresh every 20 seconds
+window.addEventListener('load', () => {
+  loadComments();
+  setInterval(loadComments, 20000);
+});
+</script>
 </body>
 </html>
