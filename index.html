@@ -678,29 +678,29 @@
 async function submitComment() {
   const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
   const commentText = document.getElementById('commentText').value;
-
+  
   if (!commentText.trim()) {
     alert('Please enter your insight before sharing.');
     return;
   }
-
+  
   const isPublic = document.getElementById('commentPublic').checked;
   const playstyle = document.getElementById('aiPersonality').value;
-
+  
   const payload = {
     username: username,
     insight: commentText,
     playstyle: playstyle,
     public: isPublic
   };
-
+  
   try {
-    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss"), {
+    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
+    
     if (res.ok) {
       alert("Comment submitted successfully!");
       document.getElementById('commentUsername').value = '';
@@ -715,7 +715,6 @@ async function submitComment() {
     alert("Failed to submit comment.");
   }
 }
-
     
 async function loadComments() {
   try {
