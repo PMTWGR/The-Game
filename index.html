@@ -189,7 +189,7 @@
       <input type="checkbox" id="commentPublic" checked>
       Share publicly
     </label>
-    <button onclick="submitComment()">Share Insight</button>
+    <button onclick="handleCommentSubmit()">Share Insight</button>
   </div>
   <div id="commentsList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
 </div>
@@ -199,7 +199,7 @@
   <script>
     const NS = "http://www.w3.org/2000/svg";
     const BASE_SQUARE = 70;
-    const ASSET_DIR = "https://pmtwgr.github.io/The-Game/image/";
+    const ASSET_DIR = "./image/";
     const V = "?v=11";
     const DEBUG = true;
 
@@ -361,12 +361,15 @@
       const piece = state.board[r][c];
       
       if (state.selected) {
-        const [sr, sc] = state.selected;
-        const selectedPiece = state.board[sr][sc];
-        const mv = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
-        if (mv) {
-          applyMove(mv);
-          return;
+        // Check if state.selected is an array before destructuring
+        if (Array.isArray(state.selected)) {
+          const [sr, sc] = state.selected;
+          const selectedPiece = state.board[sr][sc];
+          const mv = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
+          if (mv) {
+            applyMove(mv);
+            return;
+          }
         }
         state.selected = null;
         state.validMoves = [];
@@ -675,6 +678,10 @@
 
     // ===== COMMENT SYSTEM FUNCTIONS =====
 
+function handleCommentSubmit() {
+  submitComment();
+}
+
 async function submitComment() {
   const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
   const commentText = document.getElementById('commentText').value;
@@ -695,7 +702,7 @@ async function submitComment() {
   };
 
   try {
-    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss"), {
+    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
