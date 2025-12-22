@@ -180,19 +180,19 @@
       <div id="imageErrors"></div>
       
       <!-- Comment Section -->
-   <div id="commentSection">
-  <h3>Community Insights</h3>
-  <div id="commentForm">
-    <input type="text" id="commentUsername" placeholder="Username (optional)" maxlength="20">
-    <textarea id="commentText" placeholder="What does this game reveal to you about the music industry?"></textarea>
-    <label style="font-size: 12px;">
-      <input type="checkbox" id="commentPublic" checked>
-      Share publicly
-    </label>
-    <button onclick="submitComment()">Share Insight</button>
-  </div>
-  <div id="commentsList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
-</div>
+      <div id="commentSection">
+        <h3>Community Insights</h3>
+        <div id="commentForm">
+          <input type="text" id="commentUsername" placeholder="Username (optional)" maxlength="20">
+          <textarea id="commentText" placeholder="What does this game reveal to you about the music industry?"></textarea>
+          <label style="font-size: 12px;">
+            <input type="checkbox" id="commentPublic" checked>
+            Share publicly
+          </label>
+          <button onclick="submitComment()">Share Insight</button>
+        </div>
+        <div id="commentsList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
+      </div>
     </div>
   </div>
 
@@ -201,22 +201,13 @@
     const BASE_SQUARE = 70;
     const ASSET_DIR = "https://pmtwgr.github.io/The-Game/image/";
     const V = "?v=11";
-    const DEBUG = true;
 
-    // Airtable Configuration - REPLACE WITH YOUR REAL KEY LOCALLY
-    const AIRTABLE_CONFIG = {
-        BASE_ID: 'appHesCUB8Nu1xVK1',
-        TABLE_NAME: 'CommunityInsights',
-        API_KEY: 'YOUR_API_KEY_HERE'
-    };
-
-    function spriteFor(pieceChar, isBlack = false) {
+    function spriteFor(pieceChar) {
       const isWhite = (pieceChar === pieceChar.toLowerCase());
-      const color = isBlack || !isWhite ? "black-" : "white-";
+      const color = isWhite ? "white-" : "black-";
       const typeMap = { p: "pawn", r: "rook", n: "knight", b: "bishop", q: "queen", k: "king" };
       const type = typeMap[pieceChar.toLowerCase()];
-      const sprite = ASSET_DIR + color + type + ".png" + V;
-      return sprite;
+      return ASSET_DIR + color + type + ".png" + V;
     }
 
     const state = {
@@ -243,7 +234,7 @@
         setThinking(`${persona.name}: ${persona.style}. Focus: ${persona.focus}.`);
       });
       init();
-      loadComments(); // Load existing comments on startup
+      loadComments();
     });
 
     function init() {
@@ -252,7 +243,7 @@
       drawAll();
       pushEdu("Game started. You control White (Artists).");
       const initialPersona = aiPersonalities[document.getElementById('aiPersonality').value];
-      setThinking(`${initialPersona.name}: ${initialPersona.style}. Focus: ${initialPersona.focus}.`);
+      setThinking(`${initialPersona.name}: ${initialPersona.style}. Focus: ${persona.focus}.`);
     }
 
     function buildBoard() {
@@ -268,9 +259,7 @@
           sq.setAttribute('height', BASE_SQUARE);
           sq.setAttribute('fill', (r + c) % 2 === 0 ? '#fff' : '#eee');
           sq.setAttribute('stroke', '#000');
-          sq.addEventListener('click', (e) => {
-            onSquare(r, c);
-          });
+          sq.addEventListener('click', () => onSquare(r, c));
           g.appendChild(sq);
         }
       }
@@ -289,10 +278,6 @@
       }
     }
 
-    function squareToAlgebraic(r, c) {
-      return `${String.fromCharCode(97 + c)}${8 - r}`;
-    }
-
     function drawAll() {
       drawPieces();
       showValid();
@@ -303,11 +288,12 @@
       const popupLayer = document.getElementById('popupLayer');
       popupLayer.innerHTML = '';
       g.innerHTML = '';
-      const errorDiv = document.getElementById('imageErrors');
+      
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const p = state.board[r][c];
           if (!p) continue;
+          
           const img = document.createElementNS(NS, 'image');
           const src = spriteFor(p);
           img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
@@ -315,42 +301,11 @@
           img.setAttribute('x', c * BASE_SQUARE + 5);
           img.setAttribute('y', r * BASE_SQUARE + 5);
           img.setAttribute('width', BASE_SQUARE - 10);
-          img.setAttribute('height', BASE_SQUARE - 10); // FIXED: was SQUARE, now BASE_SQUARE
-          if (p === p.toLowerCase()) {
-            img.addEventListener('error', () => {
-              errorDiv.innerHTML += `<p>Error loading image for ${p} at ${squareToAlgebraic(r, c)}: ${src}</p>`;
-              const blackSrc = ASSET_DIR + 'black-' + ({p:'pawn',r:'rook',n:'knight',b:'bishop',q:'queen',k:'king'}[p]) + '.png' + V;
-              img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', blackSrc);
-              img.setAttribute('href', blackSrc);
-              img.classList.add('whiteAuto');
-            }, { once: true });
-            img.addEventListener('mouseover', () => {
-              const popup = document.createElementNS(NS, 'image');
-              const isWhite = p === p.toLowerCase();
-              const popupSrc = spriteFor(p);
-              popup.setAttributeNS('http://www.w3.org/1999/xlink', 'href', popupSrc);
-              popup.setAttribute('href', popupSrc);
-              popup.setAttribute('class', 'popup-image');
-              popup.setAttribute('x', c * BASE_SQUARE - 70);
-              popup.setAttribute('y', r * BASE_SQUARE - 215);
-              popup.setAttribute('width', 210);
-              popup.setAttribute('height', 210);
-              popup.style.display = 'inline';
-              popupLayer.appendChild(popup);
-            });
-            img.addEventListener('mouseout', () => {
-              popupLayer.innerHTML = '';
-            });
-            img.addEventListener('click', (e) => {
-              e.stopPropagation();
-              onSquare(r, c);
-            });
-          } else {
-            img.addEventListener('click', (e) => {
-              e.stopPropagation();
-              onSquare(r, c);
-            });
-          }
+          img.setAttribute('height', BASE_SQUARE - 10);
+          img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onSquare(r, c);
+          });
           g.appendChild(img);
         }
       }
@@ -361,8 +316,6 @@
       const piece = state.board[r][c];
       
       if (state.selected) {
-        const [sr, sc] = state.selected;
-        const selectedPiece = state.board[sr][sc];
         const mv = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
         if (mv) {
           applyMove(mv);
@@ -385,7 +338,6 @@
 
     function showValid() {
       const g = document.getElementById('validMoves');
-      if (!g) return;
       g.innerHTML = '';
       for (const m of state.validMoves) {
         const dot = document.createElementNS(NS, 'circle');
@@ -393,9 +345,7 @@
         dot.setAttribute('cy', m.to[0] * BASE_SQUARE + BASE_SQUARE / 2);
         dot.setAttribute('r', 12);
         dot.setAttribute('class', 'valid-move');
-        dot.addEventListener('click', () => {
-          applyMove(m);
-        });
+        dot.addEventListener('click', () => applyMove(m));
         g.appendChild(dot);
       }
     }
@@ -417,9 +367,7 @@
 
       if (type === 'p') {
         const dir = white ? -1 : 1;
-        if (!state.board[r + dir]?.[c]) {
-          ms.push({ from: [r, c], to: [r + dir, c], piece: p });
-        }
+        if (!state.board[r + dir]?.[c]) ms.push({ from: [r, c], to: [r + dir, c], piece: p });
         const startRow = white ? 6 : 1;
         if (r === startRow && !state.board[r + dir]?.[c] && !state.board[r + 2 * dir]?.[c]) {
           ms.push({ from: [r, c], to: [r + 2 * dir, c], piece: p });
@@ -434,17 +382,15 @@
           }
         });
       } else if (type === 'n') {
-        [[2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1], [-1, -2], [1, -2], [2, -1]].forEach(([dr, dc]) => {
-          add(r + dr, c + dc);
-        });
+        [[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]].forEach(([dr,dc]) => add(r+dr, c+dc));
       } else if (type === 'k') {
         for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
           if (dr || dc) add(r + dr, c + dc);
         }
       } else {
         const dirs = [];
-        if (type === 'b' || type === 'q') dirs.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
-        if (type === 'r' || type === 'q') dirs.push([1, 0], [-1, 0], [0, 1], [0, -1]);
+        if (type === 'b' || type === 'q') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]);
+        if (type === 'r' || type === 'q') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
         for (const [dr, dc] of dirs) {
           let rr = r + dr, cc = c + dc;
           while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) {
@@ -467,8 +413,7 @@
     function applyMove(m) {
       const [fr, fc] = m.from, [tr, tc] = m.to;
       const captured = state.board[tr][tc];
-      const piece = state.board[fr][fc];
-      state.board[tr][tc] = piece;
+      state.board[tr][tc] = state.board[fr][fc];
       state.board[fr][fc] = null;
 
       if (!state.firstMoveMade) {
@@ -482,54 +427,14 @@
 
       drawPieces();
       showValid();
-      pushEdu(explain(piece));
+      pushEdu(explain(m.piece));
 
       if (captured && captured.toLowerCase() === 'k') {
         state.gameOver = true;
         document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>GAME OVER</p></div>';
-        showReflectionModal();
-      } else if (isCheckmate(state.currentPlayer)) {
-        state.gameOver = true;
-        document.getElementById('educationalContent').innerHTML = '<div class="insight"><p>CHECK MATE</p></div>';
-        showReflectionModal();
       } else if (state.currentPlayer === 'black' && !state.gameOver) {
         setTimeout(makeAIMove, 600);
       }
-    }
-
-    function getKingPosition(board, isWhite) {
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const p = board[r][c];
-          if (p && p.toLowerCase() === 'k' && (isWhite ? p === 'k' : p === 'K')) {
-            return [r, c];
-          }
-        }
-      }
-      return null;
-    }
-
-    function isInCheck(board, isWhite) {
-      const kingPos = getKingPosition(board, isWhite);
-      if (!kingPos) return false;
-      const [kr, kc] = kingPos;
-      const opponentMoves = getAllMoves(board, !isWhite);
-      for (const move of opponentMoves) {
-        if (move.to[0] === kr && move.to[1] === kc) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    function isCheckmate(isWhite) {
-      if (!isInCheck(state.board, isWhite)) return false;
-      const moves = getAllMoves(state.board, isWhite);
-      for (const move of moves) {
-        const newBoard = makeMove(state.board, move);
-        if (!isInCheck(newBoard, isWhite)) return false;
-      }
-      return true;
     }
 
     function explain(p) {
@@ -571,8 +476,7 @@
       for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
         const p = board[r][c];
         if (!p || (isWhite && p !== p.toLowerCase()) || (!isWhite && p !== p.toUpperCase())) continue;
-        const pieceMoves = genMoves(r, c);
-        moves.push(...pieceMoves);
+        moves.push(...genMoves(r, c));
       }
       return moves;
     }
@@ -640,8 +544,6 @@
       if (bestMove) {
         applyMove(bestMove);
         setThinking(`${persona.name}: ${persona.style}. Focus: ${persona.focus}.`);
-      } else {
-        setThinking("No valid moves found.");
       }
       state.aiThinking = false;
     }
@@ -673,97 +575,74 @@
       wrap.scrollTop = wrap.scrollHeight;
     }
 
-    // ===== COMMENT SYSTEM FUNCTIONS =====
+    // ===== COMMENT SYSTEM =====
+    async function submitComment() {
+      const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
+      const commentText = document.getElementById('commentText').value;
 
-async function submitComment() {
-  const username = document.getElementById('commentUsername').value || 'Anonymous Strategist';
-  const commentText = document.getElementById('commentText').value;
+      if (!commentText.trim()) {
+        alert('Please enter your insight before sharing.');
+        return;
+      }
 
-  if (!commentText.trim()) {
-    alert('Please enter your insight before sharing.');
-    return;
-  }
+      const payload = {
+        username: username,
+        insight: commentText,
+        playstyle: document.getElementById('aiPersonality').value,
+        public: document.getElementById('commentPublic').checked
+      };
 
-  const isPublic = document.getElementById('commentPublic').checked;
-  const playstyle = document.getElementById('aiPersonality').value;
+      try {
+        const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-  const payload = {
-    username: username,
-    insight: commentText,
-    playstyle: playstyle,
-    public: isPublic
-  };
-
-  try {
-    const res = await fetch("https://hook.eu1.make.com/js9ckti3xyoeiein79xa7r9bgez4dkss"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-      alert("Comment submitted successfully!");
-      document.getElementById('commentUsername').value = '';
-      document.getElementById('commentText').value = '';
-      document.getElementById('commentPublic').checked = true;
-      loadComments();
-    } else {
-      alert("Failed to submit comment.");
-    }
-  } catch (err) {
-    console.error("Error submitting comment:", err);
-    alert("Failed to submit comment.");
-  }
-}
-
-    
-async function loadComments() {
-  try {
-    const response = await fetch("https://hook.eu1.make.com/nlx62ytqm43r2cer5xgkqeqlp444q9w2");
-    if (!response.ok) throw new Error("Failed to fetch comments");
-    
-    const data = await response.json();
-    displayComments(data.comments || []); // Extract the comments array
-  } catch (error) {
-    console.error("Error loading comments:", error);
-    displayComments([]); // Show empty if error
-  }
-}
-
-setInterval(loadComments, 15000); // Refresh comments every 15s
-
-
-function displayComments(comments) {
-  const container = document.getElementById('commentsList');
-  if (!Array.isArray(comments)) {
-    container.innerHTML = "<p>No comments yet.</p>";
-    return;
-  }
-
-  const html = comments.map(c => `
-    <div class="comment">
-      <div class="comment-username">${c.Username || "Anonymous"}</div>
-      <div class="comment-text">${c.Insight}</div>
-    </div>
-  `).join("");
-
-  container.innerHTML = html;
-}
-
-
-
-    function formatDate(timestamp) {
-      const date = new Date(timestamp);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        if (res.ok) {
+          alert("Comment submitted successfully!");
+          document.getElementById('commentUsername').value = '';
+          document.getElementById('commentText').value = '';
+          document.getElementById('commentPublic').checked = true;
+          loadComments();
+        } else {
+          alert("Failed to submit comment.");
+        }
+      } catch (err) {
+        console.error("Error submitting comment:", err);
+        alert("Failed to submit comment.");
+      }
     }
 
-    function showReflectionModal() {
-      setTimeout(() => {
-        pushEdu("Game ended. Share your insights in the comment section below!");
-      }, 1000);
+    async function loadComments() {
+      try {
+        const response = await fetch("https://hook.eu1.make.com/nlx62ytqm43r2cer5xgkqeqlp444q9w2");
+        if (!response.ok) throw new Error("Failed to fetch comments");
+        
+        const data = await response.json();
+        displayComments(data.comments || []);
+      } catch (error) {
+        console.error("Error loading comments:", error);
+        displayComments([]);
+      }
     }
 
-    // Load comments when page loads
+    function displayComments(comments) {
+      const container = document.getElementById('commentsList');
+      if (!Array.isArray(comments) || comments.length === 0) {
+        container.innerHTML = "<p style='color: #666; font-size: 12px;'>No insights yet. Be the first to share!</p>";
+        return;
+      }
+
+      container.innerHTML = comments.map(c => `
+        <div class="comment">
+          <div class="comment-username">${c.username || "Anonymous"}</div>
+          <div class="comment-text">${c.insight || ""}</div>
+        </div>
+      `).join("");
+    }
+
+    setInterval(loadComments, 30000);
     loadComments();
   </script>
 </body>
