@@ -636,8 +636,8 @@
 
       container.innerHTML = comments.map(c => `
         <div class="comment">
-          <div class="comment-username">${c.username || "Anonymous"}</div>
-          <div class="comment-text">${c.insight || ""}</div>
+          <div class="comment-username">${c.Username || "Anonymous"}</div>
+          <div class="comment-text">${c.Insight || ""}</div>
         </div>
       `).join("");
     }
