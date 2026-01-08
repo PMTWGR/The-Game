@@ -620,7 +620,7 @@
         if (!response.ok) throw new Error("Failed to fetch comments");
         
         const data = await response.json();
-        displayComments(data.comments || []);
+        displayComments(data.array || []);
       } catch (error) {
         console.error("Error loading comments:", error);
         displayComments([]);
